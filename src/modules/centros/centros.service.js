@@ -1,39 +1,32 @@
-import { env, http, ENDPOINTS, unwrapList, unwrapItem } from "@/core";
-import { mapCentro, toCentroDTO } from "./centros.mapper";
-import { centrosMock } from "./centros.mock";
+import api, { datos, todas, enviar } from "@/core/config/api/consumo";
 
-const MOCK = () => env.isMock("centros");
+// Ruta /centros → tabla `trainingcenters` del backend
+const RUTA = "/centros";
 
-/**
- * Servicio de Centros → Laravel: GET/POST /centros, GET/PUT/DELETE /centros/{id}.
- * El token Bearer se agrega solo en httpClient cuando el login también es real.
- */
 export const centrosService = {
-    async list() {
-        if (MOCK()) return (await centrosMock.list()).map(mapCentro);
-        return unwrapList(await http.get(ENDPOINTS.centros.base)).map(mapCentro);
+    /** GET /centros (junta todas las páginas del paginate) */
+    async list(params) {
+        return todas(RUTA, params);
     },
 
+    /** GET /centros/:id */
     async get(id) {
-        if (MOCK()) return mapCentro(await centrosMock.get(id));
-        return mapCentro(unwrapItem(await http.get(ENDPOINTS.centros.byId(id))));
+        return datos(await api.get(`${RUTA}/${id}`));
     },
 
+    /** POST /centros (si hay imagen se envía como multipart) */
     async create(values) {
-        const dto = toCentroDTO(values);
-        if (MOCK()) return mapCentro(await centrosMock.create({ ...dto, sedes: 0, ambientes: 0 }));
-        return mapCentro(unwrapItem(await http.post(ENDPOINTS.centros.base, dto)));
+        return datos(await enviar("post", RUTA, values));
     },
 
+    /** PUT /centros/:id (basta con enviar los campos que cambian) */
     async update(id, values) {
-        const dto = toCentroDTO(values);
-        if (MOCK()) return mapCentro(await centrosMock.update(id, dto));
-        return mapCentro(unwrapItem(await http.put(ENDPOINTS.centros.byId(id), dto)));
+        return datos(await enviar("put", `${RUTA}/${id}`, values));
     },
 
+    /** DELETE /centros/:id */
     async remove(id) {
-        if (MOCK()) return centrosMock.remove(id);
-        await http.delete(ENDPOINTS.centros.byId(id));
-        return true;
+        await api.delete(`${RUTA}/${id}`);
+        return id;
     },
 };

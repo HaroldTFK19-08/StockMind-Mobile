@@ -4,6 +4,7 @@ import { Card, Badge } from "@/shared/ui";
 import { COLORS } from "@/shared/theme";
 import { AMBIENTE_ICONOS } from "../ambientes.constants";
 
+/** Tarjeta de un ambiente (tabla environments; GET /ambientes trae headquarter y elements_count). */
 export default function AmbienteCard({ ambiente, onPress }) {
     return (
         <Card onPress={onPress}>
@@ -14,25 +15,21 @@ export default function AmbienteCard({ ambiente, onPress }) {
                 <View className="flex-1 ml-3.5">
                     <Text className="text-base font-bold text-gray-900">{ambiente.nombre}</Text>
                     <Text className="text-sm text-gray-500 mt-0.5" numberOfLines={1}>
-                        {ambiente.tipo} · {ambiente.centro}
+                        {[ambiente.tipo, ambiente.headquarter?.nombre].filter(Boolean).join(" · ")}
                     </Text>
                 </View>
             </View>
             <View className="flex-row items-center justify-between mt-4">
                 <Badge label={ambiente.estado} />
                 <View className="flex-row items-center gap-4">
-                    {ambiente.capacidad ? (
-                        <View className="flex-row items-center">
-                            <Ionicons name="people-outline" size={15} color={COLORS.gray500} />
-                            <Text className="text-sm text-gray-600 ml-1">{ambiente.capacidad}</Text>
-                        </View>
-                    ) : null}
-                    {ambiente.totalElementos != null ? (
-                        <View className="flex-row items-center">
-                            <Ionicons name="cube-outline" size={15} color={COLORS.gray500} />
-                            <Text className="text-sm text-gray-600 ml-1">{ambiente.totalElementos}</Text>
-                        </View>
-                    ) : null}
+                    <View className="flex-row items-center">
+                        <Ionicons name="people-outline" size={15} color={COLORS.gray500} />
+                        <Text className="text-sm text-gray-600 ml-1">{ambiente.capacidad}</Text>
+                    </View>
+                    <View className="flex-row items-center">
+                        <Ionicons name="cube-outline" size={15} color={COLORS.gray500} />
+                        <Text className="text-sm text-gray-600 ml-1">{ambiente.elements_count ?? 0}</Text>
+                    </View>
                 </View>
             </View>
         </Card>

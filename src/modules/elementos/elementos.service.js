@@ -1,46 +1,37 @@
-import { env, http, ENDPOINTS, unwrapList, unwrapItem } from "@/core";
-import { ambientesService } from "@/modules/ambientes/ambientes.service";
-import { mapElemento, toElementoDTO } from "./elementos.mapper";
-import { elementosMock } from "./elementos.mock";
+import api, { datos, todas, enviar } from "@/core/config/api/consumo";
+
+// Ruta /elementos → tabla `elements` del backend
+const RUTA = "/elementos";
 
 export const elementosService = {
-    /** GET /elementos?estado=&ambiente_id= */
-    async list({ estado, ambienteId } = {}) {
-        if (env.isMock("elementos")) {
-            const rows = await elementosMock.list(
-                (e) => (!estado || e.estado === estado) && (!ambienteId || e.ambienteId === ambienteId)
-            );
-            return rows.map(mapElemento);
-        }
-        const data = await http.get(ENDPOINTS.elementos.base, { params: { estado, ambiente_id: ambienteId } });
-        return unwrapList(data).map(mapElemento);
+    /** GET /elementos (junta todas las páginas del paginate) */
+    async list(params) {
+        return todas(RUTA, params);
     },
 
-    /** POST /elementos */
+    /** GET /elementos/:id */
+    async get(id) {
+        return datos(await api.get(`${RUTA}/${id}`));
+    },
+
+    /** POST /elementos (si hay imagen se envía como multipart) */
     async create(values) {
-        const dto = toElementoDTO(values);
-        if (env.isMock("elementos")) {
-            const ambiente = dto.ambiente_id ? await ambientesService.get(dto.ambiente_id) : null;
-            const row = await elementosMock.create({
-                ...values,
-                placa: values.placa || `SENA-${Date.now().toString().slice(-6)}`,
-                ambiente: ambiente?.nombre,
-            });
-            return mapElemento(row);
-        }
-        return mapElemento(unwrapItem(await http.post(ENDPOINTS.elementos.base, dto)));
+        return datos(await enviar("post", RUTA, values));
     },
 
-    /** PATCH /elementos/:id  (actualización parcial, p. ej. solo el estado) */
+    /** PUT /elementos/:id (basta con enviar los campos que cambian) */
     async update(id, values) {
-        if (env.isMock("elementos")) return mapElemento(await elementosMock.update(id, values));
-        const dto = toElementoDTO(values);
-        return mapElemento(unwrapItem(await http.patch(ENDPOINTS.elementos.byId(id), dto)));
+        return datos(await enviar("put", `${RUTA}/${id}`, values));
     },
 
     /** DELETE /elementos/:id */
     async remove(id) {
-        if (env.isMock("elementos")) return elementosMock.remove(id);
-        return http.delete(ENDPOINTS.elementos.byId(id));
+        await api.delete(`${RUTA}/${id}`);
+        return id;
+    },
+
+    /** Cambia solo el estado (asignado y prestado los maneja el backend). */
+    async cambiarEstado(elemento, estado) {
+        return elementosService.update(elemento.id, { estado });
     },
 };

@@ -1,10 +1,10 @@
-export const REPORTE_TIPOS = ["Daño", "Falla", "Mantenimiento", "Pérdida", "Falta de insumos"];
-export const REPORTE_ESTADOS = ["Pendiente", "En revisión", "En proceso", "Atendido", "Rechazado"];
+// Valores exactos de los enum de la tabla reports
+export const REPORTE_TIPOS = ["daño", "perdida", "falla", "otro"];
+export const REPORTE_ESTADOS = ["pendiente", "en_revision", "resuelto"];
 
 export const TIPO_ICONOS = {
-    "Daño": "hammer-outline",
-    Falla: "flash-outline",
-    Mantenimiento: "construct-outline",
-    "Pérdida": "search-outline",
-    "Falta de insumos": "water-outline",
+    "daño": "hammer-outline",
+    perdida: "search-outline",
+    falla: "flash-outline",
+    otro: "help-circle-outline",
 };

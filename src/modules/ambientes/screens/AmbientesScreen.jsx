@@ -1,16 +1,16 @@
 import { useState } from "react";
-import { useResource, useFilteredList } from "@/shared/hooks";
+import { useFilteredList } from "@/shared/hooks";
 import { ListPage, ResourceList } from "@/shared/ui";
 import PortalHeader from "@/navigation/PortalHeader";
-import { ambientesService } from "../ambientes.service";
+import { useAmbientes } from "../hooks/useAmbientes";
 import { useAmbientesAnimation } from "../hooks/useAmbientesAnimation";
 import AmbienteCard from "../components/AmbienteCard";
 import AmbienteDetail from "../components/AmbienteDetail";
 
-const SEARCH_KEYS = ["nombre", "tipo", "centro"];
+const SEARCH_KEYS = ["nombre", "tipo"];
 
 export default function AmbientesScreen({ subtitle = "Consulta los ambientes de formación" }) {
-    const resource = useResource(() => ambientesService.list(), []);
+    const resource = useAmbientes(); // GET /ambientes
     const lista = useFilteredList(resource.data, { searchKeys: SEARCH_KEYS, filterKey: "estado" });
     const [detalle, setDetalle] = useState(null);
     const animationStyle = useAmbientesAnimation();
@@ -21,7 +21,7 @@ export default function AmbientesScreen({ subtitle = "Consulta los ambientes de 
             header={<PortalHeader />}
             title="Ambientes"
             subtitle={subtitle}
-            search={{ value: lista.query, onChangeText: lista.setQuery, placeholder: "Buscar por nombre, tipo o centro" }}
+            search={{ value: lista.query, onChangeText: lista.setQuery, placeholder: "Buscar por nombre o tipo" }}
             filters={{ options: lista.filterOptions, value: lista.filter, onChange: lista.setFilter }}
         >
             <ResourceList

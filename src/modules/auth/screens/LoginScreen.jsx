@@ -7,7 +7,6 @@ import { Button, TextField } from "@/shared/ui";
 import { COLORS } from "@/shared/theme";
 import { useAuthAnimation } from "../hooks/useAuthAnimation";
 import AuthBackground from "../components/AuthBackground";
-import DemoAccounts from "../components/DemoAccounts";
 import { useAuth } from "../AuthProvider";
 import { loginSchema } from "../auth.schemas";
 
@@ -85,12 +84,6 @@ export default function LoginScreen() {
                 </Pressable>
             </View>
 
-            <DemoAccounts
-                onSelect={(c) => {
-                    formik.setValues({ correo: c.correo, contrasena: c.contrasena });
-                    setServerError(null);
-                }}
-            />
         </AuthBackground>
     );
 }

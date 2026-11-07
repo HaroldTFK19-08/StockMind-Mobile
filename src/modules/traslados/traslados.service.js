@@ -1,49 +1,37 @@
-import { env, http, ENDPOINTS, unwrapList, unwrapItem, mockSession } from "@/core";
-import { ambientesService } from "@/modules/ambientes/ambientes.service";
-import { elementosService } from "@/modules/elementos/elementos.service";
-import { elementosMock } from "@/modules/elementos/elementos.mock";
-import { mapTraslado, toTrasladoDTO } from "./traslados.mapper";
-import { trasladosMock } from "./traslados.mock";
+import api, { datos, todas, enviar } from "@/core/config/api/consumo";
+
+// Ruta /traslados → tabla `transfers` del backend
+const RUTA = "/traslados";
 
 export const trasladosService = {
-    /** GET /traslados */
-    async list() {
-        if (env.isMock("traslados")) return (await trasladosMock.list()).map(mapTraslado);
-        return unwrapList(await http.get(ENDPOINTS.traslados.base)).map(mapTraslado);
+    /** GET /traslados (junta todas las páginas del paginate) */
+    async list(params) {
+        return todas(RUTA, params);
     },
 
-    /** POST /traslados */
+    /** GET /traslados/:id */
+    async get(id) {
+        return datos(await api.get(`${RUTA}/${id}`));
+    },
+
+    /** POST /traslados (si hay imagen se envía como multipart) */
     async create(values) {
-        const dto = toTrasladoDTO(values);
-        if (env.isMock("traslados")) {
-            const [elemento, destino] = await Promise.all([elementosMock.get(values.elementoId), ambientesService.get(values.destinoId)]);
-            const row = await trasladosMock.create({
-                elementoId: elemento.id,
-                elemento: elemento.nombre,
-                placa: elemento.placa,
-                origen: elemento.ambiente,
-                destinoId: destino.id,
-                destino: destino.nombre,
-                fechaSalida: dto.fecha_salida,
-                fechaLlegada: dto.fecha_llegada,
-                estado: "Programado",
-                motivo: dto.motivo,
-                responsable: mockSession.get()?.nombre,
-            });
-            return mapTraslado(row);
-        }
-        return mapTraslado(unwrapItem(await http.post(ENDPOINTS.traslados.base, dto)));
+        return datos(await enviar("post", RUTA, values));
     },
 
-    /** PATCH /traslados/:id  { estado } */
+    /** PUT /traslados/:id (basta con enviar los campos que cambian) */
+    async update(id, values) {
+        return datos(await enviar("put", `${RUTA}/${id}`, values));
+    },
+
+    /** DELETE /traslados/:id */
+    async remove(id) {
+        await api.delete(`${RUTA}/${id}`);
+        return id;
+    },
+
+    /** Cambia el estado: pendiente → aprobado → completado, o pendiente → rechazado. */
     async cambiarEstado(traslado, estado) {
-        if (env.isMock("traslados")) {
-            const row = await trasladosMock.update(traslado.id, { estado });
-            if (estado === "Entregado" && traslado.elementoId) {
-                await elementosService.update(traslado.elementoId, { ambiente: traslado.destino, ambienteId: traslado.destinoId });
-            }
-            return mapTraslado(row);
-        }
-        return mapTraslado(unwrapItem(await http.patch(ENDPOINTS.traslados.byId(traslado.id), { estado })));
+        return trasladosService.update(traslado.id, { estado });
     },
 };

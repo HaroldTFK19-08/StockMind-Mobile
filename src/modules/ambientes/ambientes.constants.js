@@ -1,11 +1,8 @@
-export const AMBIENTE_ESTADOS = ["Disponible", "En uso", "En mantenimiento"];
-export const AMBIENTE_TIPOS = ["Salón", "Laboratorio", "Sala de cómputo", "TICS", "Cocina", "Taller"];
-
+// El tipo es texto libre en el backend; si coincide con alguno se usa su ícono
 export const AMBIENTE_ICONOS = {
-    "Salón": "easel-outline",
-    Laboratorio: "flask-outline",
-    "Sala de cómputo": "desktop-outline",
-    TICS: "wifi-outline",
-    Cocina: "restaurant-outline",
+    "Sala de sistemas": "desktop-outline",
     Taller: "construct-outline",
+    Laboratorio: "flask-outline",
+    "Salón": "easel-outline",
+    Cocina: "restaurant-outline",
 };

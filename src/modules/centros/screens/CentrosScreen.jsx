@@ -1,8 +1,8 @@
 import { useState } from "react";
-import { useResource, useFilteredList } from "@/shared/hooks";
+import { useFilteredList } from "@/shared/hooks";
 import { ListPage, ResourceList, Button } from "@/shared/ui";
 import PortalHeader from "@/navigation/PortalHeader";
-import { centrosService } from "../centros.service";
+import { useCentros } from "../hooks/useCentros";
 import { useCentrosAnimation } from "../hooks/useCentrosAnimation";
 import CentroCard from "../components/CentroCard";
 import CentroForm from "../components/CentroForm";
@@ -18,7 +18,7 @@ const SEARCH_KEYS = ["nombre", "ciudad", "regional"];
  * @param {boolean} canEdit    - true para administradores (habilita editar y eliminar)
  */
 export default function CentrosScreen({ canCreate = true, canEdit = true }) {
-    const resource = useResource(() => centrosService.list(), []);
+    const resource = useCentros(); // GET /centros + helpers para la lista local
     const lista = useFilteredList(resource.data, { searchKeys: SEARCH_KEYS });
 
     // null = form cerrado | false = nuevo centro | objeto = edición
@@ -27,23 +27,10 @@ export default function CentrosScreen({ canCreate = true, canEdit = true }) {
     const animationStyle = useCentrosAnimation();
 
     /** Tras crear: añade al principio. Tras editar: reemplaza en su posición. */
-    const handleSaved = (centro) => {
-        resource.setData((prev) => {
-            const arr = prev ?? [];
-            const idx = arr.findIndex((c) => c.id === centro.id);
-            if (idx >= 0) {
-                const copy = [...arr];
-                copy[idx] = centro;
-                return copy;
-            }
-            return [centro, ...arr];
-        });
-    };
+    const handleSaved = (centro) => resource.guardar(centro);
 
     /** Tras eliminar: quita el centro de la lista local. */
-    const handleDeleted = (id) => {
-        resource.setData((prev) => (prev ?? []).filter((c) => c.id !== id));
-    };
+    const handleDeleted = (id) => resource.quitar(id);
 
     const count = lista.items?.length ?? 0;
     const subtitle = count === 1 ? "1 centro registrado" : `${count} centros registrados`;

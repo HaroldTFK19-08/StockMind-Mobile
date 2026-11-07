@@ -1,19 +1,20 @@
 import { useState } from "react";
-import { useResource, useFilteredList, useMutation } from "@/shared/hooks";
+import { useFilteredList, useMutation } from "@/shared/hooks";
 import { ListPage, ResourceList, Button, useToast } from "@/shared/ui";
 import PortalHeader from "@/navigation/PortalHeader";
 import { asignacionesService } from "../asignaciones.service";
+import { useAsignaciones } from "../hooks/useAsignaciones";
 import { useAsignacionesAnimation } from "../hooks/useAsignacionesAnimation";
 import AsignacionCard from "../components/AsignacionCard";
 import AsignacionDetail from "../components/AsignacionDetail";
 import AsignacionForm from "../components/AsignacionForm";
 
-const SEARCH_KEYS = ["aprendiz", "elemento", "placa", "ambiente"];
+const SEARCH_KEYS = ["observaciones", "apprentice_id"];
 
 /** Gestión de asignaciones (cuentadante). */
 export default function AsignacionesScreen() {
     const toast = useToast();
-    const resource = useResource(() => asignacionesService.list(), []);
+    const resource = useAsignaciones(); // GET /asignaciones
     const lista = useFilteredList(resource.data, { searchKeys: SEARCH_KEYS, filterKey: "estado" });
     const [form, setForm] = useState(false);
     const [detalle, setDetalle] = useState(null);
@@ -23,8 +24,8 @@ export default function AsignacionesScreen() {
     const onFinalizar = async () => {
         try {
             const actualizada = await finalizar.mutate(detalle);
-            resource.setData((prev) => prev.map((a) => (a.id === actualizada.id ? actualizada : a)));
-            toast.show("Asignación finalizada. El elemento quedó disponible.");
+            resource.reemplazar(actualizada);
+            toast.show("Asignación devuelta. El elemento quedó disponible.");
             setDetalle(null);
         } catch (error) {
             toast.show(error.message, "error");
@@ -40,7 +41,7 @@ export default function AsignacionesScreen() {
             search={{
                 value: lista.query,
                 onChangeText: lista.setQuery,
-                placeholder: "Buscar por aprendiz o elemento",
+                placeholder: "Buscar por observación o ID de aprendiz",
                 onAdd: () => setForm(true),
                 addLabel: "Nueva asignación",
             }}
@@ -58,13 +59,13 @@ export default function AsignacionesScreen() {
                 }}
                 renderItem={({ item }) => <AsignacionCard asignacion={item} onPress={() => setDetalle(item)} />}
             />
-            <AsignacionForm visible={form} onClose={() => setForm(false)} onSaved={(a) => resource.setData((prev) => [a, ...(prev ?? [])])} />
+            <AsignacionForm visible={form} onClose={() => setForm(false)} onSaved={resource.agregar} />
             <AsignacionDetail
                 asignacion={detalle}
                 onClose={() => setDetalle(null)}
                 actions={
-                    detalle && detalle.estado !== "Finalizada" ? (
-                        <Button title="Finalizar asignación" icon="checkmark-circle-outline" variant="danger" loading={finalizar.loading} onPress={onFinalizar} />
+                    detalle && detalle.estado !== "devuelta" ? (
+                        <Button title="Registrar devolución" icon="checkmark-circle-outline" variant="danger" loading={finalizar.loading} onPress={onFinalizar} />
                     ) : null
                 }
             />

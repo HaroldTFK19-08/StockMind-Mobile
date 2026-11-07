@@ -2,7 +2,6 @@ import { View, Text, Image, ScrollView } from "react-native";
 import Constants from "expo-constants";
 import { Screen, Card, InfoField } from "@/shared/ui";
 import { LOGO_COLOR } from "@/shared/theme";
-import { env } from "@/core";
 import { useAuthAnimation } from "../hooks/useAuthAnimation";
 import PortalHeader from "@/navigation/PortalHeader";
 
@@ -27,8 +26,7 @@ export default function AboutScreen() {
                     </Text>
                 </Card>
                 <Card className="mt-4 gap-4">
-                    <InfoField icon="server-outline" label="Origen de datos" value={!env.usesApi ? "Demostración (mocks en memoria)" : env.useMocks ? `Mixto · API: ${env.apiModules.join(", ")}` : "Servidor"} />
-                    {env.usesApi ? <InfoField icon="link-outline" label="API" value={env.apiUrl} /> : null}
+                    <InfoField icon="server-outline" label="Origen de datos" value="Pendiente de configuración" />
                     <InfoField icon="location-outline" label="Regional" value="Cauca · Popayán" />
                 </Card>
             </ScrollView>

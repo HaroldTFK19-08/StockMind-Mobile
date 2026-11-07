@@ -33,7 +33,7 @@ yarn-error.*
 /ios
 /android
 
-# Variables locales (la plantilla .env.example SÍ se sube)
+# Variables locales
 .env
 .env.local
 .env.*.local

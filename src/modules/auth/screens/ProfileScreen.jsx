@@ -7,7 +7,6 @@ import * as Yup from "yup";
 import { Screen, Avatar, Badge, Card, InfoField, Button, BottomSheet, TextField, useToast } from "@/shared/ui";
 import { useMutation } from "@/shared/hooks";
 import { COLORS } from "@/shared/theme";
-import { env } from "@/core";
 import { useAuthAnimation } from "../hooks/useAuthAnimation";
 import PortalHeader from "@/navigation/PortalHeader";
 import { useAuth } from "../AuthProvider";
@@ -123,12 +122,6 @@ export default function ProfileScreen() {
                     <Card className="py-1">
                         <Opcion icon="information-circle-outline" label="Acerca de StockMind" description="Versión y créditos" onPress={() => router.push("/acerca")} />
                         <View className="h-px bg-gray-100" />
-                        <Opcion
-                            icon={env.usesApi ? "cloud-done-outline" : "flask-outline"}
-                            label="Origen de datos"
-                            description={env.usesApi ? env.apiUrl : "Datos de demostración (sin backend)"}
-                            onPress={() => router.push("/acerca")}
-                        />
                     </Card>
 
                     <Button title="Cerrar sesión" icon="log-out-outline" variant="danger" onPress={() => setConfirmar(true)} />

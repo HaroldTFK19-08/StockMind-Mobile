@@ -1,33 +1,45 @@
 import { useState } from "react";
 import { View } from "react-native";
-import { useResource, useFilteredList, useMutation } from "@/shared/hooks";
+import { useFilteredList, useMutation } from "@/shared/hooks";
 import { ListPage, ResourceList, Button, BottomSheet, InfoField, InfoGroup, Badge, useToast } from "@/shared/ui";
-import { formatDate } from "@/shared/utils";
+import { formatDate, nombresElementos, nombreUsuario } from "@/shared/utils";
 import PortalHeader from "@/navigation/PortalHeader";
 import { trasladosService } from "../traslados.service";
+import { useTraslados } from "../hooks/useTraslados";
 import { useTrasladosAnimation } from "../hooks/useTrasladosAnimation";
-import TrasladoCard from "../components/TrasladoCard";
+import TrasladoCard, { origenDe, destinoDe, elementosDe } from "../components/TrasladoCard";
 import TrasladoForm from "../components/TrasladoForm";
 
-const SEARCH_KEYS = ["elemento", "placa", "origen", "destino"];
-const SIGUIENTE = { Programado: "En tránsito", "En tránsito": "Entregado" };
+const SEARCH_KEYS = ["motivo"];
+
+/**
+ * Acciones posibles según el estado (mismas reglas de TrasladoService):
+ * pendiente → aprobado o rechazado · aprobado → completado · completado/rechazado no cambian.
+ */
+const ACCIONES = {
+    pendiente: [
+        { estado: "aprobado", titulo: "Aprobar traslado", icono: "checkmark-outline", variante: "primary" },
+        { estado: "rechazado", titulo: "Rechazar", icono: "close-outline", variante: "danger" },
+    ],
+    aprobado: [{ estado: "completado", titulo: "Marcar como completado", icono: "checkmark-done-outline", variante: "primary" }],
+};
 
 export default function TrasladosScreen() {
     const toast = useToast();
-    const resource = useResource(() => trasladosService.list(), []);
+    const resource = useTraslados(); // GET /traslados
     const lista = useFilteredList(resource.data, { searchKeys: SEARCH_KEYS, filterKey: "estado" });
     const [form, setForm] = useState(false);
     const [detalle, setDetalle] = useState(null);
-    const avanzar = useMutation(trasladosService.cambiarEstado);
+    const cambiar = useMutation(trasladosService.cambiarEstado);
     const animationStyle = useTrasladosAnimation();
 
-    const siguiente = detalle ? SIGUIENTE[detalle.estado] : null;
+    const acciones = detalle ? ACCIONES[detalle.estado] ?? [] : [];
 
-    const onAvanzar = async () => {
+    const onCambiar = async (estado) => {
         try {
-            const t = await avanzar.mutate(detalle, siguiente);
-            resource.setData((prev) => prev.map((x) => (x.id === t.id ? t : x)));
-            toast.show(`Traslado marcado como "${siguiente}"`);
+            const t = await cambiar.mutate(detalle, estado); // PUT /traslados/:id { estado }
+            resource.reemplazar(t);
+            toast.show(`Traslado ${estado}`);
             setDetalle(null);
         } catch (error) {
             toast.show(error.message, "error");
@@ -43,7 +55,7 @@ export default function TrasladosScreen() {
             search={{
                 value: lista.query,
                 onChangeText: lista.setQuery,
-                placeholder: "Buscar por elemento o ambiente",
+                placeholder: "Buscar por motivo",
                 onAdd: () => setForm(true),
                 addLabel: "Nuevo traslado",
             }}
@@ -56,26 +68,25 @@ export default function TrasladosScreen() {
                 empty={{
                     icon: "swap-horizontal-outline",
                     title: "Sin traslados",
-                    action: <Button title="Programar traslado" icon="add" onPress={() => setForm(true)} />,
+                    action: <Button title="Solicitar traslado" icon="add" onPress={() => setForm(true)} />,
                 }}
                 renderItem={({ item }) => <TrasladoCard traslado={item} onPress={() => setDetalle(item)} />}
             />
-            <TrasladoForm visible={form} onClose={() => setForm(false)} onSaved={(t) => resource.setData((prev) => [t, ...(prev ?? [])])} />
+            <TrasladoForm visible={form} onClose={() => setForm(false)} onSaved={resource.agregar} />
 
             <BottomSheet
                 visible={Boolean(detalle)}
                 onClose={() => setDetalle(null)}
-                title={detalle?.elemento ?? "Traslado"}
-                subtitle={detalle?.placa}
+                title={detalle?.motivo ?? "Traslado"}
                 icon="swap-horizontal-outline"
                 footer={
-                    siguiente ? (
-                        <Button
-                            title={siguiente === "Entregado" ? "Confirmar entrega" : "Marcar en tránsito"}
-                            icon={siguiente === "Entregado" ? "checkmark-done-outline" : "car-outline"}
-                            loading={avanzar.loading}
-                            onPress={onAvanzar}
-                        />
+                    acciones.length ? (
+                        <View className="gap-3">
+                            {acciones.map((a) => (
+                                <Button key={a.estado} title={a.titulo} icon={a.icono} variant={a.variante}
+                                    loading={cambiar.loading} onPress={() => onCambiar(a.estado)} />
+                            ))}
+                        </View>
                     ) : null
                 }
             >
@@ -85,14 +96,15 @@ export default function TrasladosScreen() {
                             <Badge label={detalle.estado} />
                         </View>
                         <InfoGroup>
-                            <InfoField icon="exit-outline" label="Origen" value={detalle.origen} />
-                            <InfoField icon="enter-outline" label="Destino" value={detalle.destino} />
+                            <InfoField icon="exit-outline" label="Origen" value={origenDe(detalle)} />
+                            <InfoField icon="enter-outline" label="Destino" value={destinoDe(detalle)} />
+                            <InfoField icon="cube-outline" label="Elementos" value={nombresElementos(elementosDe(detalle))} />
                         </InfoGroup>
                         <InfoGroup>
-                            <InfoField icon="calendar-outline" label="Salida" value={formatDate(detalle.fechaSalida)} />
-                            <InfoField icon="calendar-clear-outline" label="Llegada" value={formatDate(detalle.fechaLlegada)} />
-                            <InfoField icon="chatbox-ellipses-outline" label="Motivo" value={detalle.motivo} />
-                            <InfoField icon="person-outline" label="Responsable" value={detalle.responsable} />
+                            <InfoField icon="calendar-outline" label="Solicitud" value={formatDate(detalle.fecha_solicitud)} />
+                            <InfoField icon="calendar-clear-outline" label="Traslado" value={formatDate(detalle.fecha_traslado)} />
+                            <InfoField icon="key-outline" label="Cuenta-dante"
+                                value={nombreUsuario(detalle.danteaccount?.user) ?? `#${detalle.danteaccount_id}`} />
                         </InfoGroup>
                     </>
                 ) : null}

@@ -1,59 +1,44 @@
-import { env, http, ENDPOINTS, unwrapList, unwrapItem, mockSession } from "@/core";
-import { usuariosService } from "@/modules/usuarios/usuarios.service";
-import { elementosService } from "@/modules/elementos/elementos.service";
-import { elementosMock } from "@/modules/elementos/elementos.mock";
-import { mapAsignacion, toAsignacionDTO } from "./asignaciones.mapper";
-import { asignacionesMock } from "./asignaciones.mock";
+import api, { datos, todas, enviar } from "@/core/config/api/consumo";
+import { serviceNotConfigured } from "@/core";
+import { todayISO } from "@/shared/utils";
+
+// Ruta /asignaciones → tabla `assignments` del backend
+const RUTA = "/asignaciones";
 
 export const asignacionesService = {
-    /** GET /asignaciones  (cuentadante / admin) */
-    async list() {
-        if (env.isMock("asignaciones")) return (await asignacionesMock.list()).map(mapAsignacion);
-        return unwrapList(await http.get(ENDPOINTS.asignaciones.base)).map(mapAsignacion);
+    /** GET /asignaciones (junta todas las páginas del paginate) */
+    async list(params) {
+        return todas(RUTA, params);
     },
 
-    /** GET /asignaciones/mias  (aprendiz autenticado, identificado por el token) */
-    async mias() {
-        if (env.isMock("asignaciones")) {
-            const yo = mockSession.get();
-            return (await asignacionesMock.list((a) => a.aprendizId === yo?.id)).map(mapAsignacion);
-        }
-        return unwrapList(await http.get(ENDPOINTS.asignaciones.mias)).map(mapAsignacion);
+    /** GET /asignaciones/:id */
+    async get(id) {
+        return datos(await api.get(`${RUTA}/${id}`));
     },
 
-    /** POST /asignaciones */
+    /** POST /asignaciones (si hay imagen se envía como multipart) */
     async create(values) {
-        const dto = toAsignacionDTO(values);
-        if (env.isMock("asignaciones")) {
-            const [aprendiz, elemento] = await Promise.all([
-                usuariosService.get(values.aprendizId),
-                elementosMock.get(values.elementoId),
-            ]);
-            await elementosService.update(elemento.id, { estado: "En uso" });
-            const row = await asignacionesMock.create({
-                aprendizId: aprendiz.id,
-                aprendiz: aprendiz.nombre,
-                elementoId: elemento.id,
-                elemento: elemento.nombre,
-                placa: elemento.placa,
-                categoria: elemento.categoria,
-                ambiente: elemento.ambiente,
-                fechaInicio: dto.fecha_inicio,
-                fechaFin: dto.fecha_fin,
-                observaciones: dto.observaciones,
-            });
-            return mapAsignacion(row);
-        }
-        return mapAsignacion(unwrapItem(await http.post(ENDPOINTS.asignaciones.base, dto)));
+        return datos(await enviar("post", RUTA, values));
     },
 
-    /** PATCH /asignaciones/:id  { estado: "Finalizada" } — devuelve el elemento */
+    /** PUT /asignaciones/:id (basta con enviar los campos que cambian) */
+    async update(id, values) {
+        return datos(await enviar("put", `${RUTA}/${id}`, values));
+    },
+
+    /** DELETE /asignaciones/:id */
+    async remove(id) {
+        await api.delete(`${RUTA}/${id}`);
+        return id;
+    },
+
+    /** "Mis elementos" necesita saber quién inició sesión (auth), por eso queda pendiente. */
+    mias() {
+        return serviceNotConfigured("asignaciones.mias");
+    },
+
+    /** Marca la asignación como devuelta; el backend deja el elemento disponible. */
     async finalizar(asignacion) {
-        if (env.isMock("asignaciones")) {
-            const row = await asignacionesMock.update(asignacion.id, { estado: "Finalizada" });
-            if (asignacion.elementoId) await elementosService.update(asignacion.elementoId, { estado: "Disponible" });
-            return mapAsignacion(row);
-        }
-        return mapAsignacion(unwrapItem(await http.patch(ENDPOINTS.asignaciones.byId(asignacion.id), { estado: "Finalizada" })));
+        return asignacionesService.update(asignacion.id, { estado: "devuelta", fecha_devolucion_real: todayISO() });
     },
 };

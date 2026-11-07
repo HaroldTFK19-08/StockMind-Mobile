@@ -8,20 +8,19 @@ import ReporteCard from "../components/ReporteCard";
 import ReporteDetail from "../components/ReporteDetail";
 import ReporteForm from "../components/ReporteForm";
 
-const SEARCH_KEYS = ["elemento", "placa", "tipo", "descripcion", "reportadoPor", "ambiente"];
+const SEARCH_KEYS = ["tipo", "descripcion"];
 
 /**
  * scope="all":  todos los reportes (admin) · scope="mine": los míos
- * elementScope: de qué elementos puede reportar ("mine" = asignados al aprendiz)
  */
-export default function ReportesScreen({ scope = "mine", elementScope = "all", canCreate = true, canManage = false }) {
+export default function ReportesScreen({ scope = "mine", canCreate = true, canManage = false }) {
     const resource = useResource(() => (scope === "all" ? reportesService.list() : reportesService.mios()), [scope]);
     const lista = useFilteredList(resource.data, { searchKeys: SEARCH_KEYS, filterKey: "estado" });
     const [form, setForm] = useState(false);
     const [detalle, setDetalle] = useState(null);
     const animationStyle = useReportesAnimation();
 
-    const pendientes = (resource.data ?? []).filter((r) => r.estado === "Pendiente").length;
+    const pendientes = (resource.data ?? []).filter((r) => r.estado === "pendiente").length;
 
     return (
         <ListPage
@@ -56,7 +55,6 @@ export default function ReportesScreen({ scope = "mine", elementScope = "all", c
             />
             {canCreate ? (
                 <ReporteForm
-                    scope={elementScope}
                     visible={form}
                     onClose={() => setForm(false)}
                     onSaved={(r) => resource.setData((prev) => [r, ...(prev ?? [])])}
@@ -66,7 +64,7 @@ export default function ReportesScreen({ scope = "mine", elementScope = "all", c
                 reporte={detalle}
                 canManage={canManage}
                 onClose={() => setDetalle(null)}
-                onUpdated={(r) => resource.setData((prev) => prev.map((x) => (x.id === r.id ? r : x)))}
+                onUpdated={(r) => resource.setData((prev) => (prev ?? []).map((x) => (x.id === r.id ? r : x)))}
             />
         </ListPage>
     );

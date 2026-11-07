@@ -1,46 +1,39 @@
 import { useEffect } from "react";
 import { useFormik } from "formik";
 import * as Yup from "yup";
-import { BottomSheet, TextField, ChipSelect, SelectField, Button, useToast } from "@/shared/ui";
+import { BottomSheet, TextField, ChipSelect, MultiSelectField, ImageField, Button, useToast } from "@/shared/ui";
 import { useMutation, useResource } from "@/shared/hooks";
+import { opcionesDe } from "@/shared/utils";
 import { elementosService } from "@/modules/elementos/elementos.service";
-import { asignacionesService } from "@/modules/asignaciones/asignaciones.service";
 import { reportesService } from "../reportes.service";
 import { REPORTE_TIPOS } from "../reportes.constants";
 
+// Mismas reglas que RegistroReporteRequest
 const schema = Yup.object({
-    elementoId: Yup.string().required("Selecciona el elemento"),
+    apprentice_id: Yup.number().typeError("Solo números").required("Escribe el ID del aprendiz"),
+    element_ids: Yup.array().min(1, "Selecciona al menos un elemento"),
     tipo: Yup.string().required("Selecciona el tipo de novedad"),
-    descripcion: Yup.string().trim().min(10, "Describe la novedad (mínimo 10 caracteres)").max(500, "Máximo 500 caracteres").required("La descripción es obligatoria"),
+    descripcion: Yup.string().trim().max(500, "Máximo 500 caracteres").required("La descripción es obligatoria"),
+    foto_probatorio: Yup.mixed().required("Debes adjuntar una foto como prueba"),
 });
 
 /**
- * scope="mine": el aprendiz solo puede reportar sus elementos asignados.
- * scope="all":  instructores y admin pueden reportar cualquier elemento.
+ * Formulario para reportar una novedad (POST /reportes, multipart por la foto).
+ * @param {object} [asignacion] - si se abre desde una asignación, su elemento y aprendiz quedan preseleccionados
  */
-export default function ReporteForm({ visible, onClose, onSaved, scope = "all", elementoId }) {
+export default function ReporteForm({ visible, onClose, onSaved, asignacion }) {
     const toast = useToast();
     const crear = useMutation(reportesService.create);
-    const opciones = useResource(
-        async () => {
-            if (scope === "mine") {
-                const mias = await asignacionesService.mias();
-                return mias.map((a) => ({ label: a.elemento, value: a.elementoId, description: [a.placa, a.ambiente].filter(Boolean).join(" · ") }));
-            }
-            const elementos = await elementosService.list();
-            return elementos.map((e) => ({ label: e.nombre, value: e.id, description: [e.placa, e.ambiente].filter(Boolean).join(" · ") }));
-        },
-        [scope],
-        { enabled: visible }
-    );
+    const elementos = useResource(() => elementosService.list(), [], { enabled: visible });
+    const opciones = (elementos.data ?? []).map((e) => ({ label: e.nombre, value: e.id, description: e.codigo_inventario }));
 
     const formik = useFormik({
-        initialValues: { elementoId: elementoId ?? "", tipo: "", descripcion: "" },
+        initialValues: { apprentice_id: "", element_ids: [], tipo: "", descripcion: "", foto_probatorio: null },
         validationSchema: schema,
         onSubmit: async (values, helpers) => {
             try {
-                const reporte = await crear.mutate(values);
-                toast.show("Reporte enviado. Te avisaremos cuando sea atendido.");
+                const reporte = await crear.mutate({ ...values, apprentice_id: Number(values.apprentice_id) });
+                toast.show("Reporte enviado");
                 helpers.resetForm();
                 onSaved?.(reporte);
                 onClose();
@@ -50,11 +43,14 @@ export default function ReporteForm({ visible, onClose, onSaved, scope = "all", 
         },
     });
 
-    // Preselecciona el elemento cuando el formulario se abre desde un detalle
+    // Si viene de una asignación, se preseleccionan su elemento y su aprendiz
     useEffect(() => {
-        if (visible && elementoId) formik.setFieldValue("elementoId", elementoId);
+        if (visible && asignacion) {
+            formik.setFieldValue("element_ids", [asignacion.element_id]);
+            formik.setFieldValue("apprentice_id", String(asignacion.apprentice_id));
+        }
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [visible, elementoId]);
+    }, [visible, asignacion?.id]);
 
     return (
         <BottomSheet
@@ -65,17 +61,13 @@ export default function ReporteForm({ visible, onClose, onSaved, scope = "all", 
             icon="alert-circle-outline"
             footer={<Button title="Enviar reporte" icon="send-outline" loading={crear.loading} onPress={formik.handleSubmit} />}
         >
-            <SelectField
-                formik={formik}
-                name="elementoId"
-                label="Elemento"
-                icon="cube-outline"
-                placeholder="¿Qué elemento presenta la novedad?"
-                options={opciones.data ?? []}
-                loading={opciones.loading}
-            />
-            <ChipSelect formik={formik} name="tipo" label="Tipo de novedad" options={REPORTE_TIPOS} />
+            {/* No hay ruta /aprendices: se escribe el id (tabla apprentices) */}
+            <TextField formik={formik} name="apprentice_id" label="ID del aprendiz" icon="person-outline" keyboardType="numeric" />
+            <MultiSelectField formik={formik} name="element_ids" label="Elementos" options={opciones}
+                loading={elementos.loading} placeholder="¿Qué elementos presentan la novedad?" />
+            <ChipSelect formik={formik} name="tipo" label="Tipo de novedad" options={opcionesDe(REPORTE_TIPOS)} />
             <TextField formik={formik} name="descripcion" label="Descripción" placeholder="¿Qué pasó? ¿Desde cuándo?" multiline maxLength={500} />
+            <ImageField formik={formik} name="foto_probatorio" label="Foto de evidencia" />
         </BottomSheet>
     );
 }

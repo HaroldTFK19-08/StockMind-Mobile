@@ -2,37 +2,41 @@ import { useFormik } from "formik";
 import * as Yup from "yup";
 import { BottomSheet, TextField, SelectField, Button, useToast } from "@/shared/ui";
 import { useMutation, useResource } from "@/shared/hooks";
-import { ISO_DATE_REGEX, parseDate, todayISO } from "@/shared/utils";
-import { usuariosService } from "@/modules/usuarios/usuarios.service";
+import { ISO_DATE_REGEX, todayISO } from "@/shared/utils";
 import { elementosService } from "@/modules/elementos/elementos.service";
 import { asignacionesService } from "../asignaciones.service";
 
-const fecha = Yup.string().matches(ISO_DATE_REGEX, "Usa el formato AAAA-MM-DD").required("La fecha es obligatoria");
+const fecha = Yup.string().matches(ISO_DATE_REGEX, "Usa el formato AAAA-MM-DD");
 
+// Mismas reglas que RegistroAsignacionRequest
 const schema = Yup.object({
-    aprendizId: Yup.string().required("Selecciona un aprendiz"),
-    elementoId: Yup.string().required("Selecciona un elemento"),
-    fechaInicio: fecha,
-    fechaFin: fecha.test("posterior", "Debe ser posterior a la fecha de inicio", function (value) {
-        const inicio = parseDate(this.parent.fechaInicio);
-        const fin = parseDate(value);
-        return !inicio || !fin || fin > inicio;
-    }),
-    observaciones: Yup.string().max(300, "Máximo 300 caracteres"),
+    element_id: Yup.string().required("Selecciona un elemento"),
+    apprentice_id: Yup.number().typeError("Solo números").required("Escribe el ID del aprendiz"),
+    teacher_id: Yup.number().typeError("Solo números").required("Escribe el ID del instructor"),
+    fecha_asignacion: fecha,
+    fecha_devolucion_esperada: fecha.required("La fecha es obligatoria"),
+    observaciones: Yup.string().max(255, "Máximo 255 caracteres"),
 });
 
 export default function AsignacionForm({ visible, onClose, onSaved }) {
     const toast = useToast();
     const crear = useMutation(asignacionesService.create);
-    const aprendices = useResource(() => usuariosService.listAprendices(), [], { enabled: visible });
-    const disponibles = useResource(() => elementosService.list({ estado: "Disponible" }), [], { enabled: visible });
+    // Solo elementos disponibles (el backend rechaza los que ya están asignados o prestados)
+    const elementos = useResource(() => elementosService.list(), [], { enabled: visible });
+    const disponibles = (elementos.data ?? []).filter((e) => e.estado === "disponible");
 
     const formik = useFormik({
-        initialValues: { aprendizId: "", elementoId: "", fechaInicio: todayISO(), fechaFin: "", observaciones: "" },
+        initialValues: { element_id: "", apprentice_id: "", teacher_id: "", fecha_asignacion: todayISO(), fecha_devolucion_esperada: "", observaciones: "" },
         validationSchema: schema,
         onSubmit: async (values, helpers) => {
             try {
-                const asignacion = await crear.mutate(values);
+                const asignacion = await crear.mutate({
+                    ...values,
+                    element_id: Number(values.element_id),
+                    apprentice_id: Number(values.apprentice_id),
+                    teacher_id: Number(values.teacher_id),
+                    observaciones: values.observaciones || null,
+                }); // POST /asignaciones → el backend marca el elemento como "asignado"
                 toast.show("Elemento asignado correctamente");
                 helpers.resetForm();
                 onSaved?.(asignacion);
@@ -54,32 +58,18 @@ export default function AsignacionForm({ visible, onClose, onSaved }) {
         >
             <SelectField
                 formik={formik}
-                name="aprendizId"
-                label="Aprendiz"
-                icon="person-outline"
-                placeholder="Selecciona el aprendiz"
-                loading={aprendices.loading}
-                options={(aprendices.data ?? []).map((u) => ({
-                    label: u.nombre,
-                    value: u.id,
-                    description: [u.programa, u.ficha && `Ficha ${u.ficha}`].filter(Boolean).join(" · "),
-                }))}
-            />
-            <SelectField
-                formik={formik}
-                name="elementoId"
+                name="element_id"
                 label="Elemento disponible"
                 icon="cube-outline"
                 placeholder="Selecciona el elemento"
-                loading={disponibles.loading}
-                options={(disponibles.data ?? []).map((e) => ({
-                    label: e.nombre,
-                    value: e.id,
-                    description: [e.placa, e.ambiente].filter(Boolean).join(" · "),
-                }))}
+                loading={elementos.loading}
+                options={disponibles.map((e) => ({ label: e.nombre, value: e.id, description: e.codigo_inventario }))}
             />
-            <TextField formik={formik} name="fechaInicio" label="Fecha de inicio" icon="calendar-outline" placeholder="AAAA-MM-DD" keyboardType="numbers-and-punctuation" />
-            <TextField formik={formik} name="fechaFin" label="Fecha de finalización" icon="calendar-clear-outline" placeholder="AAAA-MM-DD" keyboardType="numbers-and-punctuation" />
+            {/* No hay ruta /aprendices ni /instructores: se escribe el id */}
+            <TextField formik={formik} name="apprentice_id" label="ID del aprendiz" icon="person-outline" keyboardType="numeric" />
+            <TextField formik={formik} name="teacher_id" label="ID del instructor" icon="school-outline" keyboardType="numeric" />
+            <TextField formik={formik} name="fecha_asignacion" label="Fecha de asignación" icon="calendar-outline" placeholder="AAAA-MM-DD" keyboardType="numbers-and-punctuation" />
+            <TextField formik={formik} name="fecha_devolucion_esperada" label="Devolución esperada" icon="calendar-clear-outline" placeholder="AAAA-MM-DD" keyboardType="numbers-and-punctuation" />
             <TextField formik={formik} name="observaciones" label="Observaciones (opcional)" placeholder="Estado de entrega, accesorios…" multiline />
         </BottomSheet>
     );

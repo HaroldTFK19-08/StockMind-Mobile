@@ -33,7 +33,7 @@ export function formatRelative(value) {
     if (diffH < 48) return "Ayer";
     return formatDate(d);
 }
-/** Fecha de hoy en formato ISO corto (AAAA-MM-DD), la que se envía al backend. */
+/** Fecha de hoy en formato ISO corto (AAAA-MM-DD). */
 export function todayISO() {
     const d = new Date();
     const mm = String(d.getMonth() + 1).padStart(2, "0");

@@ -21,7 +21,7 @@ export const ROLES_REGISTRO = [
 ];
 
 /**
- * Convierte el rol que envía el backend ("ADMIN", "Administrador",
+ * Convierte el rol recibido ("ADMIN", "Administrador",
  * "Cuenta dante", { nombre: "Instructor" }…) a una clave interna.
  */
 export function normalizeRole(raw) {

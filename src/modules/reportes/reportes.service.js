@@ -1,55 +1,43 @@
-import { env, http, ENDPOINTS, unwrapList, unwrapItem, mockSession } from "@/core";
-import { todayISO } from "@/shared/utils";
-import { elementosMock } from "@/modules/elementos/elementos.mock";
-import { mapReporte, toReporteDTO } from "./reportes.mapper";
-import { reportesMock } from "./reportes.mock";
+import api, { datos, todas, enviar } from "@/core/config/api/consumo";
+import { serviceNotConfigured } from "@/core";
 
-const porFecha = (a, b) => String(b.fecha).localeCompare(String(a.fecha));
+// Ruta /reportes → tabla `reports` del backend
+const RUTA = "/reportes";
 
 export const reportesService = {
-    /** GET /reportes  (todos; admin) */
-    async list() {
-        const rows = env.isMock("reportes") ? await reportesMock.list() : unwrapList(await http.get(ENDPOINTS.reportes.base));
-        return rows.map(mapReporte).sort(porFecha);
+    /** GET /reportes (junta todas las páginas del paginate) */
+    async list(params) {
+        return todas(RUTA, params);
     },
 
-    /** GET /reportes/mios  (los que creó el usuario autenticado) */
-    async mios() {
-        if (env.isMock("reportes")) {
-            const yo = mockSession.get();
-            return (await reportesMock.list((r) => r.reportadoPorId === yo?.id)).map(mapReporte).sort(porFecha);
-        }
-        return unwrapList(await http.get(ENDPOINTS.reportes.mios)).map(mapReporte).sort(porFecha);
+    /** GET /reportes/:id */
+    async get(id) {
+        return datos(await api.get(`${RUTA}/${id}`));
     },
 
-    /** POST /reportes */
+    /** POST /reportes (si hay imagen se envía como multipart) */
     async create(values) {
-        const dto = toReporteDTO(values);
-        if (env.isMock("reportes")) {
-            const elemento = await elementosMock.get(values.elementoId);
-            const yo = mockSession.get();
-            const row = await reportesMock.create({
-                elementoId: elemento.id,
-                elemento: elemento.nombre,
-                placa: elemento.placa,
-                categoria: elemento.categoria,
-                ambiente: elemento.ambiente,
-                tipo: dto.tipo,
-                descripcion: dto.descripcion,
-                fecha: todayISO(),
-                estado: "Pendiente",
-                reportadoPorId: yo?.id,
-                reportadoPor: yo?.nombre,
-            });
-            return mapReporte(row);
-        }
-        return mapReporte(unwrapItem(await http.post(ENDPOINTS.reportes.base, dto)));
+        return datos(await enviar("post", RUTA, values));
     },
 
-    /** PATCH /reportes/:id  { estado, respuesta } */
-    async cambiarEstado(id, estado, respuesta) {
-        const body = { estado, respuesta: respuesta?.trim() || undefined };
-        if (env.isMock("reportes")) return mapReporte(await reportesMock.update(id, body));
-        return mapReporte(unwrapItem(await http.patch(ENDPOINTS.reportes.byId(id), body)));
+    /** PUT /reportes/:id (basta con enviar los campos que cambian) */
+    async update(id, values) {
+        return datos(await enviar("put", `${RUTA}/${id}`, values));
+    },
+
+    /** DELETE /reportes/:id */
+    async remove(id) {
+        await api.delete(`${RUTA}/${id}`);
+        return id;
+    },
+
+    /** "Mis reportes" necesita saber quién inició sesión (auth), por eso queda pendiente. */
+    mios() {
+        return serviceNotConfigured("reportes.mios");
+    },
+
+    /** Cambia solo el estado (pendiente, en_revision, resuelto). */
+    async cambiarEstado(reporte, estado) {
+        return reportesService.update(reporte.id, { estado });
     },
 };

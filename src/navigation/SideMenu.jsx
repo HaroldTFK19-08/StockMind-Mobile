@@ -1,4 +1,4 @@
-import { Modal, View, Text, Pressable, Image } from "react-native";
+import { Modal, View, Text, Pressable, Image, ScrollView } from "react-native";
 import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
@@ -105,7 +105,7 @@ export default function SideMenu({ visible, onClose }) {
                 </View>
               </View>
             </View>
-            <View className="flex-1 px-3 pt-4">
+            <ScrollView className="flex-1" contentContainerStyle={{ paddingHorizontal: 12, paddingTop: 16, paddingBottom: 8 }}>
               <MenuItem
                 icon="person-circle-outline"
                 label="Mi perfil"
@@ -125,7 +125,7 @@ export default function SideMenu({ visible, onClose }) {
                 description="Versión e información"
                 onPress={() => ir("/acerca")}
               />
-            </View>
+            </ScrollView>
             <SafeAreaView edges={["bottom"]} className="bg-white">
               <View className="px-3 border-t border-gray-100 pt-2 pb-2">
                 <MenuItem

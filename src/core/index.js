@@ -1,8 +1,2 @@
-export { env, API_MODULES } from "./config/env";
-export { ApiError } from "./api/ApiError";
-export { ENDPOINTS } from "./api/endpoints";
-export { api, http, unwrapList, unwrapItem } from "./api/httpClient";
-export { createMockCollection, mockDelay } from "./api/mockCollection";
-export { mockSession } from "./api/mockSession";
-export { pick, toId, relName, compact } from "./api/mapping";
+export { serviceNotConfigured } from "./serviceNotConfigured";
 export { tokenStorage, userStorage } from "./storage/tokenStorage";

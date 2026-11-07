@@ -8,7 +8,7 @@ import { useAsignacionesAnimation } from "../hooks/useAsignacionesAnimation";
 import AsignacionCard from "../components/AsignacionCard";
 import AsignacionDetail from "../components/AsignacionDetail";
 
-const SEARCH_KEYS = ["elemento", "placa", "ambiente", "categoria"];
+const SEARCH_KEYS = ["observaciones"];
 
 /** Elementos asignados al aprendiz autenticado. */
 export default function MisElementosScreen() {
@@ -44,14 +44,14 @@ export default function MisElementosScreen() {
                             icon="alert-circle-outline"
                             variant="outline"
                             onPress={() => {
-                                setReportar(detalle.elementoId);
+                                setReportar(detalle);
                                 setDetalle(null);
                             }}
                         />
                     ) : null
                 }
             />
-            <ReporteForm scope="mine" visible={Boolean(reportar)} elementoId={reportar} onClose={() => setReportar(null)} />
+            <ReporteForm visible={Boolean(reportar)} asignacion={reportar} onClose={() => setReportar(null)} />
         </ListPage>
     );
 }

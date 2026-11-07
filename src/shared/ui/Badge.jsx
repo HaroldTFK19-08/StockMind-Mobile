@@ -1,5 +1,5 @@
 import { View, Text } from "react-native";
-import { statusTone } from "../utils/status";
+import { statusTone, etiquetaEstado } from "../utils/status";
 
 const TONES = {
     success: { box: "bg-green-50", dot: "bg-sena", text: "text-sena-dark" },
@@ -16,7 +16,7 @@ export default function Badge({ label, tone }) {
     return (
         <View className={`flex-row items-center self-start rounded-full px-3 py-1.5 ${t.box}`}>
             <View className={`w-1.5 h-1.5 rounded-full mr-1.5 ${t.dot}`} />
-            <Text className={`text-xs font-semibold ${t.text}`}>{label}</Text>
+            <Text className={`text-xs font-semibold ${t.text}`}>{etiquetaEstado(label)}</Text>
         </View>
     );
 }

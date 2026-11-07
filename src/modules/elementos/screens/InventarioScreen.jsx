@@ -1,24 +1,22 @@
 import { useState } from "react";
-import { useResource, useFilteredList } from "@/shared/hooks";
+import { useFilteredList } from "@/shared/hooks";
 import { ListPage, ResourceList, Button } from "@/shared/ui";
 import PortalHeader from "@/navigation/PortalHeader";
-import { elementosService } from "../elementos.service";
+import { useElementos } from "../hooks/useElementos";
 import { useElementosAnimation } from "../hooks/useElementosAnimation";
 import ElementoCard from "../components/ElementoCard";
 import ElementoDetail from "../components/ElementoDetail";
 import ElementoForm from "../components/ElementoForm";
 
-const SEARCH_KEYS = ["nombre", "placa", "categoria", "ambiente", "marca"];
+const SEARCH_KEYS = ["nombre", "codigo_inventario", "serial", "marca", "modelo"];
 
 /** Inventario general. `canManage` habilita crear y cambiar estados (admin). */
 export default function InventarioScreen({ canManage = false }) {
-    const resource = useResource(() => elementosService.list(), []);
+    const resource = useElementos(); // GET /elementos
     const lista = useFilteredList(resource.data, { searchKeys: SEARCH_KEYS, filterKey: "estado" });
     const [form, setForm] = useState(false);
     const [detalle, setDetalle] = useState(null);
     const animationStyle = useElementosAnimation();
-
-    const reemplazar = (e) => resource.setData((prev) => prev.map((x) => (x.id === e.id ? e : x)));
 
     return (
         <ListPage
@@ -29,7 +27,7 @@ export default function InventarioScreen({ canManage = false }) {
             search={{
                 value: lista.query,
                 onChangeText: lista.setQuery,
-                placeholder: "Buscar por nombre, placa o ambiente",
+                placeholder: "Buscar por nombre, código o serial",
                 onAdd: canManage ? () => setForm(true) : undefined,
                 addLabel: "Nuevo elemento",
             }}
@@ -48,9 +46,9 @@ export default function InventarioScreen({ canManage = false }) {
                 renderItem={({ item }) => <ElementoCard elemento={item} onPress={() => setDetalle(item)} />}
             />
             {canManage ? (
-                <ElementoForm visible={form} onClose={() => setForm(false)} onSaved={(e) => resource.setData((prev) => [e, ...(prev ?? [])])} />
+                <ElementoForm visible={form} onClose={() => setForm(false)} onSaved={resource.agregar} />
             ) : null}
-            <ElementoDetail elemento={detalle} canManage={canManage} onUpdated={reemplazar} onClose={() => setDetalle(null)} />
+            <ElementoDetail elemento={detalle} canManage={canManage} onUpdated={resource.reemplazar} onClose={() => setDetalle(null)} />
         </ListPage>
     );
 }

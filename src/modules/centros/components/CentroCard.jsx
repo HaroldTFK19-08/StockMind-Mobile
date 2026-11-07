@@ -10,57 +10,29 @@ function Tag({ icon, label, value }) {
             <Ionicons name={icon} size={16} color={COLORS.primary} />
             <View className="ml-2 flex-1">
                 <Text className="text-[10px] uppercase font-semibold text-gray-400">{label}</Text>
-                <Text className="text-xs font-bold text-ink" numberOfLines={1}>
-                    {value}
-                </Text>
+                <Text className="text-xs font-bold text-ink" numberOfLines={1}>{value}</Text>
             </View>
         </View>
     );
 }
 
+/** Tarjeta de un centro (tabla trainingcenters). */
 export default function CentroCard({ centro, onPress }) {
-    const ubicacionTexto = [centro.ciudad, centro.regional ? `Regional ${centro.regional}` : null]
-        .filter(Boolean)
-        .join(" · ") || centro.ubicacion;
-
-    const hasMetrics = centro.sedes > 0 || centro.ambientes > 0;
-
     return (
         <Card onPress={onPress}>
-            <View className="flex-row items-start">
+            <View className="flex-row items-center">
                 {centro.foto_centro ? (
-                    <Image
-                        source={{ uri: centro.foto_centro }}
-                        className="w-12 h-12 rounded-2xl bg-gray-100"
-                        resizeMode="cover"
-                    />
+                    <Image source={{ uri: centro.foto_centro }} className="w-12 h-12 rounded-2xl bg-gray-100" resizeMode="cover" />
                 ) : (
                     <View className="w-12 h-12 rounded-2xl bg-sena-soft items-center justify-center">
                         <Ionicons name="business" size={22} color={COLORS.primary} />
                     </View>
                 )}
-                <View className="flex-1 ml-3.5">
-                    <Text className="text-base font-bold text-gray-900 leading-5">{centro.nombre}</Text>
-                    {ubicacionTexto ? (
-                        <View className="flex-row items-center mt-1">
-                            <Ionicons name="location-outline" size={14} color={COLORS.gray500} />
-                            <Text className="text-sm text-gray-500 ml-1 flex-1" numberOfLines={1}>
-                                {ubicacionTexto}
-                            </Text>
-                        </View>
-                    ) : null}
-                </View>
+                <Text className="flex-1 ml-3.5 text-base font-bold text-gray-900 leading-5">{centro.nombre}</Text>
             </View>
-
             <View className="flex-row gap-2 mt-4">
                 <Tag icon="map-outline" label="Regional" value={centro.regional} />
                 <Tag icon="navigate-outline" label="Ciudad" value={centro.ciudad} />
-                {hasMetrics && (
-                    <>
-                        {centro.sedes > 0 ? <Tag icon="git-branch-outline" label="Sedes" value={String(centro.sedes)} /> : null}
-                        {centro.ambientes > 0 ? <Tag icon="easel-outline" label="Ambientes" value={String(centro.ambientes)} /> : null}
-                    </>
-                )}
             </View>
         </Card>
     );
