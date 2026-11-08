@@ -1,6 +1,5 @@
-import PortalTabs from "@/navigation/PortalTabs";
-import { ROLES } from "@/modules/auth/roles";
+import { Stack } from "expo-router";
 
 export default function Layout() {
-    return <PortalTabs rol={ROLES.ADMIN} />;
+    return <Stack screenOptions={{ headerShown: false }} />;
 }

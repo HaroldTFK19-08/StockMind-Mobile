@@ -10,9 +10,9 @@ npx expo start --clear
 ```
 
 La integración de datos se dejó sin configurar intencionalmente. Las funciones de
-los servicios en `src/modules/*/*.service.js` lanzan un error explícito hasta que
-se implemente la nueva conexión. No hay URLs de API, mocks ni cuentas de prueba
-en el proyecto.
+los servicios de negocio en `src/modules/*/*.service.js` lanzan un error explícito
+hasta que se implemente la nueva conexión. El inicio de sesión cuenta con un modo
+demo local para validar los portales por rol mientras se integra el backend.
 
 ## Arquitectura
 
@@ -23,5 +23,16 @@ src/shared/ UI, hooks, tema y utilidades reutilizables.
 src/modules/ Dominios de negocio, pantallas y contratos de servicio.
 ```
 
-Las pantallas consumen los servicios de su dominio. La conexión nueva debe
-implementarse en esos servicios sin introducir datos de demostración.
+Las pantallas consumen los servicios de su dominio. Mientras se integra el
+backend, el inicio de sesión usa cuatro cuentas demo locales para probar la
+navegación por rol. No son credenciales reales ni deben usarse en producción:
+
+| Rol | Correo | Contraseña |
+| --- | --- | --- |
+| Administrador | `admin@stockmind.test` | `Admin123!` |
+| Instructor | `instructor@stockmind.test` | `Instructor123!` |
+| Cuentadante | `cuentadante@stockmind.test` | `Cuentadante123!` |
+| Aprendiz | `aprendiz@stockmind.test` | `Aprendiz123!` |
+
+Las cuentas están definidas en `src/modules/auth/auth.service.js` y deben
+reemplazarse por la integración real del backend antes de publicar la app.

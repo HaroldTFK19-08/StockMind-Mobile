@@ -1,4 +1,12 @@
-import { Modal, View, Text, Pressable, Image, ScrollView } from "react-native";
+import {
+  Modal,
+  View,
+  Text,
+  Pressable,
+  Image,
+  ScrollView,
+} from "react-native";
+import { useEffect, useRef } from "react";
 import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
@@ -43,9 +51,22 @@ export default function SideMenu({ visible, onClose }) {
   const router = useRouter();
   const { user, logout } = useAuth();
   const portal = PORTALS[user?.rol];
+  const pendingHref = useRef(null);
+
+  useEffect(() => {
+    if (visible || !pendingHref.current) return;
+
+    const href = pendingHref.current;
+    pendingHref.current = null;
+    // Espera a que el modal termine de cerrarse antes de navegar;
+    // si se navega durante la animación de cierre, la pantalla destino puede no mostrarse.
+    const timer = setTimeout(() => router.navigate(href), 250);
+    return () => clearTimeout(timer);
+  }, [router, visible]);
+
   const ir = (href) => {
+    pendingHref.current = href;
     onClose();
-    router.push(href);
   };
   return (
     <Modal

@@ -3,12 +3,14 @@ import { View, Text, Pressable } from "react-native";
 import { useRouter } from "expo-router";
 import { useFormik } from "formik";
 import { Ionicons } from "@expo/vector-icons";
-import { Button, TextField } from "@/shared/ui";
+import { Button, Card, TextField } from "@/shared/ui";
 import { COLORS } from "@/shared/theme";
 import { useAuthAnimation } from "../hooks/useAuthAnimation";
 import AuthBackground from "../components/AuthBackground";
+import { DEMO_CREDENTIALS } from "../auth.service";
 import { useAuth } from "../AuthProvider";
 import { loginSchema } from "../auth.schemas";
+import { ROLE_LABELS } from "../roles";
 
 export default function LoginScreen() {
     const router = useRouter();
@@ -76,6 +78,34 @@ export default function LoginScreen() {
                 onPress={formik.handleSubmit}
                 className="mt-2"
             />
+
+            <Card className="bg-slate-50 border-slate-100 rounded-2xl p-4 mt-5">
+                <Text className="text-ink font-bold text-sm">Cuentas demo</Text>
+                <Text className="text-gray-500 text-xs mt-1 mb-3">
+                    Toca una cuenta para cargar sus datos. Son solo para pruebas locales.
+                </Text>
+                {DEMO_CREDENTIALS.map((credential) => (
+                    <Pressable
+                        key={credential.rol}
+                        onPress={() =>
+                            formik.setValues({
+                                correo: credential.correo,
+                                contrasena: credential.contrasena,
+                            })
+                        }
+                        className="flex-row items-center py-2 border-t border-slate-200"
+                        accessibilityRole="button"
+                        accessibilityLabel={`Usar cuenta demo de ${ROLE_LABELS[credential.rol]}`}
+                    >
+                        <Text className="flex-1 text-gray-700 text-xs font-semibold">
+                            {ROLE_LABELS[credential.rol]}
+                        </Text>
+                        <Text className="text-sena text-xs" numberOfLines={1}>
+                            {credential.correo}
+                        </Text>
+                    </Pressable>
+                ))}
+            </Card>
 
             <View className="flex-row items-center justify-center mt-5">
                 <Text className="text-gray-500 text-sm">¿No tienes cuenta?</Text>

@@ -1,5 +1,5 @@
 export { AuthProvider, useAuth } from "./AuthProvider";
-export { authService } from "./auth.service";
+export { authService, DEMO_CREDENTIALS } from "./auth.service";
 export { ROLES, ROLE_LABELS, normalizeRole, roleLabel } from "./roles";
 export { default as WelcomeScreen } from "./screens/WelcomeScreen";
 export { default as LoginScreen } from "./screens/LoginScreen";

@@ -24,7 +24,11 @@ export function useUnreadCount(enabled = true) {
     useEffect(() => {
         if (!enabled) return undefined;
         listeners.add(setCount);
-        if (unread === null && loader) loader().catch(() => {});
+        if (unread === null && loader) {
+            Promise.resolve()
+                .then(() => loader())
+                .catch(() => {});
+        }
         return () => listeners.delete(setCount);
     }, [enabled]);
     return enabled ? count : null;
