@@ -1,22 +1,10 @@
 import { useFormik } from "formik";
-import * as Yup from "yup";
 import { BottomSheet, TextField, SelectField, Button, useToast } from "@/shared/ui";
 import { useMutation, useResource } from "@/shared/hooks";
-import { ISO_DATE_REGEX, todayISO } from "@/shared/utils";
+import { todayISO } from "@/shared/utils";
 import { elementosService } from "@/modules/elementos/elementos.service";
 import { asignacionesService } from "../asignaciones.service";
-
-const fecha = Yup.string().matches(ISO_DATE_REGEX, "Usa el formato AAAA-MM-DD");
-
-// Mismas reglas que RegistroAsignacionRequest
-const schema = Yup.object({
-    element_id: Yup.string().required("Selecciona un elemento"),
-    apprentice_id: Yup.number().typeError("Solo números").required("Escribe el ID del aprendiz"),
-    teacher_id: Yup.number().typeError("Solo números").required("Escribe el ID del instructor"),
-    fecha_asignacion: fecha,
-    fecha_devolucion_esperada: fecha.required("La fecha es obligatoria"),
-    observaciones: Yup.string().max(255, "Máximo 255 caracteres"),
-});
+import { asignacionSchema } from "../validaciones/asignaciones.schemas";
 
 export default function AsignacionForm({ visible, onClose, onSaved }) {
     const toast = useToast();
@@ -27,7 +15,7 @@ export default function AsignacionForm({ visible, onClose, onSaved }) {
 
     const formik = useFormik({
         initialValues: { element_id: "", apprentice_id: "", teacher_id: "", fecha_asignacion: todayISO(), fecha_devolucion_esperada: "", observaciones: "" },
-        validationSchema: schema,
+        validationSchema: asignacionSchema,
         onSubmit: async (values, helpers) => {
             try {
                 const asignacion = await crear.mutate({

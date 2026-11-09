@@ -3,26 +3,18 @@ import { View, Text, ScrollView, Pressable } from "react-native";
 import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { useFormik } from "formik";
-import * as Yup from "yup";
 import { Screen, Avatar, Badge, Card, InfoField, Button, BottomSheet, TextField, useToast } from "@/shared/ui";
 import { useMutation } from "@/shared/hooks";
 import { COLORS } from "@/shared/theme";
 import { useAuthAnimation } from "../hooks/useAuthAnimation";
 import PortalHeader from "@/navigation/PortalHeader";
 import { useAuth } from "../AuthProvider";
+import { perfilSchema } from "../validaciones/auth.schemas";
 
 const valoresPerfil = (user) => ({
     nombre: user?.nombre ?? "",
     correo: user?.correo ?? "",
     telefono: user?.telefono ?? "",
-});
-
-const perfilSchema = Yup.object({
-    nombre: Yup.string().trim().min(3, "Mínimo 3 caracteres").required("El nombre es obligatorio"),
-    correo: Yup.string().trim().email("Ingresa un correo válido").required("El correo es obligatorio"),
-    telefono: Yup.string()
-        .trim()
-        .matches(/^[\d\s+()-]{7,15}$/, { message: "Teléfono inválido", excludeEmptyString: true }),
 });
 
 function Opcion({ icon, label, description, onPress }) {

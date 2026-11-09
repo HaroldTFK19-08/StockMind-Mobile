@@ -1,5 +1,4 @@
 import { useFormik } from "formik";
-import * as Yup from "yup";
 import { BottomSheet, TextField, ChipSelect, SelectField, ImageField, Button, useToast } from "@/shared/ui";
 import { useMutation, useResource } from "@/shared/hooks";
 import { opcionesDe } from "@/shared/utils";
@@ -8,18 +7,7 @@ import { categoriasService } from "@/modules/categorias/categorias.service";
 import { almacenesService } from "@/modules/almacenes/almacenes.service";
 import { elementosService } from "../elementos.service";
 import { ESTADOS_MANUALES, ELEMENTO_CONDICIONES } from "../elementos.constants";
-
-// Mismas reglas que RegistroElementoRequest
-const schema = Yup.object({
-    img_elemento: Yup.mixed().required("Debes seleccionar una imagen del elemento"),
-    codigo_inventario: Yup.string().trim().max(30, "Máximo 30 caracteres").required("El código es obligatorio"),
-    nombre: Yup.string().trim().max(150, "Máximo 150 caracteres").required("El nombre es obligatorio"),
-    category_id: Yup.string().required("Selecciona una categoría"),
-    serial: Yup.string().trim().max(60, "Máximo 60 caracteres"),
-    marca: Yup.string().trim().max(60, "Máximo 60 caracteres"),
-    modelo: Yup.string().trim().max(60, "Máximo 60 caracteres"),
-    descripcion: Yup.string().trim().max(500, "Máximo 500 caracteres"),
-});
+import { elementoSchema } from "../validaciones/elementos.schemas";
 
 const INICIAL = {
     img_elemento: null, codigo_inventario: "", nombre: "", category_id: "", environment_id: "", warehouse_id: "",
@@ -40,7 +28,7 @@ export default function ElementoForm({ visible, onClose, onSaved }) {
 
     const formik = useFormik({
         initialValues: INICIAL,
-        validationSchema: schema,
+        validationSchema: elementoSchema,
         onSubmit: async (values, helpers) => {
             try {
                 const elemento = await crear.mutate(limpiar(values)); // POST /elementos (multipart por la imagen)

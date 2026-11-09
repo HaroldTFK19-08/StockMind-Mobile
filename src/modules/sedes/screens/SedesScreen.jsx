@@ -3,6 +3,7 @@ import PortalHeader from "@/navigation/PortalHeader";
 import { etiquetaEstado } from "@/shared/utils";
 import { useSedes } from "../hooks/useSedes";
 import { SEDE_CAMPOS } from "../sedes.config";
+import { sedesSchema } from "../validaciones/sedes.schema";
 
 /** Pantalla de Sedes — GET, POST, PUT y DELETE /sedes. */
 export default function SedesScreen({ puedeEditar = true }) {
@@ -12,6 +13,7 @@ export default function SedesScreen({ puedeEditar = true }) {
             header={<PortalHeader showBack />}
             recurso={sedes}
             campos={SEDE_CAMPOS}
+            crearEsquema={sedesSchema}
             titulo="Sedes"
             nombre="Sede"
             femenino

@@ -27,6 +27,7 @@ import CrudDetail from "./CrudDetail";
  * @param puedeEditar    muestra crear / editar / eliminar
  * @param editable       (registro) => false para bloquear editar/eliminar ese registro
  * @param porDefecto     valores iniciales al crear (ej: datos del usuario en sesión)
+ * @param crearEsquema   (editando) => esquema Yup del módulo
  * @param campoEstado    columna que se muestra como etiqueta de color (ej: "estado")
  * @param femenino       true para "Nueva sede", "Sede eliminada"…
  */
@@ -44,6 +45,7 @@ export default function CrudScreen({
     femenino = false,
     editable = () => true,
     porDefecto,
+    crearEsquema,
 }) {
     const nuevo = femenino ? "Nueva" : "Nuevo";
     const buscarPor = campos.filter((c) => !c.tipo || c.tipo === "texto" || c.tipo === "largo" || c.tipo === "opciones").map((c) => c.name);
@@ -125,6 +127,7 @@ export default function CrudScreen({
                     icono={icono}
                     femenino={femenino}
                     porDefecto={porDefecto}
+                    crearEsquema={crearEsquema}
                 />
             ) : null}
         </ListPage>

@@ -3,6 +3,7 @@ import PortalHeader from "@/navigation/PortalHeader";
 import { nombreUsuario } from "@/shared/utils";
 import { useFichas } from "../hooks/useFichas";
 import { FICHA_CAMPOS } from "../fichas.config";
+import { fichasSchema } from "../validaciones/fichas.schema";
 
 /** Pantalla de Fichas — GET, POST, PUT y DELETE /fichas. */
 export default function FichasScreen({ puedeEditar = true }) {
@@ -12,6 +13,7 @@ export default function FichasScreen({ puedeEditar = true }) {
             header={<PortalHeader showBack />}
             recurso={fichas}
             campos={FICHA_CAMPOS}
+            crearEsquema={fichasSchema}
             titulo="Fichas"
             nombre="Ficha"
             femenino

@@ -1,21 +1,12 @@
 import { useEffect } from "react";
 import { useFormik } from "formik";
-import * as Yup from "yup";
 import { BottomSheet, TextField, ChipSelect, MultiSelectField, ImageField, Button, useToast } from "@/shared/ui";
 import { useMutation, useResource } from "@/shared/hooks";
 import { opcionesDe } from "@/shared/utils";
 import { elementosService } from "@/modules/elementos/elementos.service";
 import { reportesService } from "../reportes.service";
 import { REPORTE_TIPOS } from "../reportes.constants";
-
-// Mismas reglas que RegistroReporteRequest
-const schema = Yup.object({
-    apprentice_id: Yup.number().typeError("Solo números").required("Escribe el ID del aprendiz"),
-    element_ids: Yup.array().min(1, "Selecciona al menos un elemento"),
-    tipo: Yup.string().required("Selecciona el tipo de novedad"),
-    descripcion: Yup.string().trim().max(500, "Máximo 500 caracteres").required("La descripción es obligatoria"),
-    foto_probatorio: Yup.mixed().required("Debes adjuntar una foto como prueba"),
-});
+import { reporteSchema } from "../validaciones/reportes.schemas";
 
 /**
  * Formulario para reportar una novedad (POST /reportes, multipart por la foto).
@@ -29,7 +20,7 @@ export default function ReporteForm({ visible, onClose, onSaved, asignacion }) {
 
     const formik = useFormik({
         initialValues: { apprentice_id: "", element_ids: [], tipo: "", descripcion: "", foto_probatorio: null },
-        validationSchema: schema,
+        validationSchema: reporteSchema,
         onSubmit: async (values, helpers) => {
             try {
                 const reporte = await crear.mutate({ ...values, apprentice_id: Number(values.apprentice_id) });

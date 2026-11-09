@@ -9,7 +9,7 @@ import { useAuthAnimation } from "../hooks/useAuthAnimation";
 import AuthBackground from "../components/AuthBackground";
 import { DEMO_CREDENTIALS } from "../auth.service";
 import { useAuth } from "../AuthProvider";
-import { loginSchema } from "../auth.schemas";
+import { loginSchema } from "../validaciones/auth.schemas";
 import { ROLE_LABELS } from "../roles";
 
 export default function LoginScreen() {

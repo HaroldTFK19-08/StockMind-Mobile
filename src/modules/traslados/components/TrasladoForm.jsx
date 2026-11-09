@@ -1,21 +1,11 @@
 import { useFormik } from "formik";
-import * as Yup from "yup";
 import { BottomSheet, TextField, SelectField, MultiSelectField, Button, useToast } from "@/shared/ui";
 import { useMutation, useResource } from "@/shared/hooks";
-import { ISO_DATE_REGEX, todayISO } from "@/shared/utils";
+import { todayISO } from "@/shared/utils";
 import { ambientesService } from "@/modules/ambientes/ambientes.service";
 import { elementosService } from "@/modules/elementos/elementos.service";
 import { trasladosService } from "../traslados.service";
-
-// Mismas reglas que RegistroTrasladoRequest
-const schema = Yup.object({
-    ambiente_origen_id: Yup.string().required("Selecciona el ambiente de origen"),
-    ambiente_destino_id: Yup.string().required("Selecciona el ambiente de destino"),
-    danteaccount_id: Yup.number().typeError("Solo números").required("Escribe el ID de la cuenta-dante"),
-    element_ids: Yup.array().min(1, "Selecciona al menos un elemento"),
-    motivo: Yup.string().trim().max(255, "Máximo 255 caracteres").required("El motivo es obligatorio"),
-    fecha_solicitud: Yup.string().matches(ISO_DATE_REGEX, "Usa el formato AAAA-MM-DD"),
-});
+import { trasladoSchema } from "../validaciones/traslados.schemas";
 
 export default function TrasladoForm({ visible, onClose, onSaved }) {
     const toast = useToast();
@@ -25,7 +15,7 @@ export default function TrasladoForm({ visible, onClose, onSaved }) {
 
     const formik = useFormik({
         initialValues: { ambiente_origen_id: "", ambiente_destino_id: "", danteaccount_id: "", element_ids: [], motivo: "", fecha_solicitud: todayISO() },
-        validationSchema: schema,
+        validationSchema: trasladoSchema,
         onSubmit: async (values, helpers) => {
             try {
                 const traslado = await crear.mutate({

@@ -57,7 +57,7 @@ function Campo({ campo, formik, visible }) {
  * @param recurso        lo que devuelve useCrud (usa recurso.crear / recurso.actualizar)
  * @param porDefecto     valores iniciales al crear (ej: { teacher_id: 3 } del usuario en sesión)
  */
-export default function CrudForm({ visible, onClose, registro, recurso, campos, nombre, icono, femenino, porDefecto }) {
+export default function CrudForm({ visible, onClose, registro, recurso, campos, nombre, icono, femenino, porDefecto, crearEsquema }) {
     const toast = useToast();
     const o = femenino ? "a" : "o"; // terminación: registrado / registrada
     const editando = Boolean(registro);
@@ -65,7 +65,7 @@ export default function CrudForm({ visible, onClose, registro, recurso, campos, 
 
     const formik = useFormik({
         initialValues: valoresIniciales(campos),
-        validationSchema: esquemaDe(campos, editando),
+        validationSchema: crearEsquema ? crearEsquema(editando) : esquemaDe(campos, editando),
         onSubmit: async (values) => {
             try {
                 const datos = valoresParaEnviar(campos, values);

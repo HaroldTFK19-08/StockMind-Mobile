@@ -8,7 +8,7 @@ import { COLORS } from "@/shared/theme";
 import { useAuthAnimation } from "../hooks/useAuthAnimation";
 import AuthBackground from "../components/AuthBackground";
 import { useAuth } from "../AuthProvider";
-import { registerSchema } from "../auth.schemas";
+import { registerSchema } from "../validaciones/auth.schemas";
 import { ROLES_REGISTRO, ROLES } from "../roles";
 
 export default function RegisterScreen() {

@@ -17,3 +17,11 @@ export const registerSchema = Yup.object({
         .oneOf([Yup.ref("contrasena")], "Las contraseñas no coinciden")
         .required("Confirma tu contraseña"),
 });
+
+export const perfilSchema = Yup.object({
+    nombre: Yup.string().trim().min(3, "Mínimo 3 caracteres").required("El nombre es obligatorio"),
+    correo: Yup.string().trim().email("Ingresa un correo válido").required("El correo es obligatorio"),
+    telefono: Yup.string()
+        .trim()
+        .matches(/^[\d\s+()-]{7,15}$/, { message: "Teléfono inválido", excludeEmptyString: true }),
+});
