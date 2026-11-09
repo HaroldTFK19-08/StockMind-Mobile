@@ -3,7 +3,7 @@ import PortalHeader from "@/navigation/PortalHeader";
 import { todayISO } from "@/shared/utils";
 import { usePrestamos } from "../hooks/usePrestamos";
 import { PRESTAMO_CAMPOS, tituloPrestamo, subtituloPrestamo } from "../prestamos.config";
-import { prestamosSchema } from "../validaciones/prestamos.schema";
+import { prestamosSchema } from "../validations/prestamos.schema";
 
 /** Pantalla de Préstamos — GET, POST, PUT y DELETE /prestamos. */
 export default function PrestamosScreen({ puedeEditar = true }) {

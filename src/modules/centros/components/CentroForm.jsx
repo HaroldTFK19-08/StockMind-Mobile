@@ -3,7 +3,7 @@ import { useFormik } from "formik";
 import { BottomSheet, TextField, ImageField, Button, useToast } from "@/shared/ui";
 import { useMutation } from "@/shared/hooks";
 import { centrosService } from "../centros.service";
-import { centroSchema } from "../validaciones/centros.schemas";
+import { centroSchema } from "../validations/centros.schemas";
 
 const EMPTY = { nombre: "", regional: "Cauca", ciudad: "", foto_centro: null };
 

@@ -5,7 +5,7 @@ import { todayISO } from "@/shared/utils";
 import { ambientesService } from "@/modules/ambientes/ambientes.service";
 import { elementosService } from "@/modules/elementos/elementos.service";
 import { trasladosService } from "../traslados.service";
-import { trasladoSchema } from "../validaciones/traslados.schemas";
+import { trasladoSchema } from "../validations/traslados.schemas";
 
 export default function TrasladoForm({ visible, onClose, onSaved }) {
     const toast = useToast();

@@ -6,7 +6,7 @@ import { opcionesDe } from "@/shared/utils";
 import { elementosService } from "@/modules/elementos/elementos.service";
 import { reportesService } from "../reportes.service";
 import { REPORTE_TIPOS } from "../reportes.constants";
-import { reporteSchema } from "../validaciones/reportes.schemas";
+import { reporteSchema } from "../validations/reportes.schemas";
 
 /**
  * Formulario para reportar una novedad (POST /reportes, multipart por la foto).

@@ -7,7 +7,7 @@ import { categoriasService } from "@/modules/categorias/categorias.service";
 import { almacenesService } from "@/modules/almacenes/almacenes.service";
 import { elementosService } from "../elementos.service";
 import { ESTADOS_MANUALES, ELEMENTO_CONDICIONES } from "../elementos.constants";
-import { elementoSchema } from "../validaciones/elementos.schemas";
+import { elementoSchema } from "../validations/elementos.schemas";
 
 const INICIAL = {
     img_elemento: null, codigo_inventario: "", nombre: "", category_id: "", environment_id: "", warehouse_id: "",

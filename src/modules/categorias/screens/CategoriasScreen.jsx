@@ -2,7 +2,7 @@ import { CrudScreen } from "@/shared/ui";
 import PortalHeader from "@/navigation/PortalHeader";
 import { useCategorias } from "../hooks/useCategorias";
 import { CATEGORIA_CAMPOS } from "../categorias.config";
-import { categoriasSchema } from "../validaciones/categorias.schema";
+import { categoriasSchema } from "../validations/categorias.schema";
 
 /** Pantalla de Categorías — GET, POST, PUT y DELETE /categorias. */
 export default function CategoriasScreen({ puedeEditar = true }) {

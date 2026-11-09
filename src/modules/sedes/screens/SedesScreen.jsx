@@ -3,7 +3,7 @@ import PortalHeader from "@/navigation/PortalHeader";
 import { etiquetaEstado } from "@/shared/utils";
 import { useSedes } from "../hooks/useSedes";
 import { SEDE_CAMPOS } from "../sedes.config";
-import { sedesSchema } from "../validaciones/sedes.schema";
+import { sedesSchema } from "../validations/sedes.schema";
 
 /** Pantalla de Sedes — GET, POST, PUT y DELETE /sedes. */
 export default function SedesScreen({ puedeEditar = true }) {

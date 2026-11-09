@@ -9,7 +9,7 @@ import { COLORS } from "@/shared/theme";
 import { useAuthAnimation } from "../hooks/useAuthAnimation";
 import PortalHeader from "@/navigation/PortalHeader";
 import { useAuth } from "../AuthProvider";
-import { perfilSchema } from "../validaciones/auth.schemas";
+import { perfilSchema } from "../validations/auth.schemas";
 
 const valoresPerfil = (user) => ({
     nombre: user?.nombre ?? "",

@@ -4,7 +4,7 @@ import { useMutation, useResource } from "@/shared/hooks";
 import { todayISO } from "@/shared/utils";
 import { elementosService } from "@/modules/elementos/elementos.service";
 import { asignacionesService } from "../asignaciones.service";
-import { asignacionSchema } from "../validaciones/asignaciones.schemas";
+import { asignacionSchema } from "../validations/asignaciones.schemas";
 
 export default function AsignacionForm({ visible, onClose, onSaved }) {
     const toast = useToast();

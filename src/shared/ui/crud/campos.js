@@ -1,6 +1,6 @@
 import { Alert, Platform } from "react-native";
 import { formatDate, toISODate, etiquetaEstado } from "../../utils";
-export { esquemaDe } from "../../validaciones/campos.schema";
+export { esquemaDe } from "../../validations/campos.schema";
 
 /**
  * Un "campo" describe una columna que se envía al backend:

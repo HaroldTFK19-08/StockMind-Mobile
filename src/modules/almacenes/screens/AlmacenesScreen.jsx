@@ -2,7 +2,7 @@ import { CrudScreen } from "@/shared/ui";
 import PortalHeader from "@/navigation/PortalHeader";
 import { useAlmacenes } from "../hooks/useAlmacenes";
 import { ALMACEN_CAMPOS } from "../almacenes.config";
-import { almacenesSchema } from "../validaciones/almacenes.schema";
+import { almacenesSchema } from "../validations/almacenes.schema";
 
 /** Pantalla de Almacenes — GET, POST, PUT y DELETE /almacenes. */
 export default function AlmacenesScreen({ puedeEditar = true }) {

@@ -3,7 +3,7 @@ import PortalHeader from "@/navigation/PortalHeader";
 import { nombreUsuario } from "@/shared/utils";
 import { useFichas } from "../hooks/useFichas";
 import { FICHA_CAMPOS } from "../fichas.config";
-import { fichasSchema } from "../validaciones/fichas.schema";
+import { fichasSchema } from "../validations/fichas.schema";
 
 /** Pantalla de Fichas — GET, POST, PUT y DELETE /fichas. */
 export default function FichasScreen({ puedeEditar = true }) {
