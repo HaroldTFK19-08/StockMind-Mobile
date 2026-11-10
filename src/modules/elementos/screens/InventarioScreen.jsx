@@ -14,7 +14,7 @@ const SEARCH_KEYS = ["nombre", "codigo_inventario", "serial", "marca", "modelo"]
 export default function InventarioScreen({ canManage = false }) {
     const resource = useElementos(); // GET /elementos
     const lista = useFilteredList(resource.data, { searchKeys: SEARCH_KEYS, filterKey: "estado" });
-    const [form, setForm] = useState(false);
+    const [form, setForm] = useState(null);
     const [detalle, setDetalle] = useState(null);
     const animationStyle = useElementosAnimation();
 
@@ -28,7 +28,7 @@ export default function InventarioScreen({ canManage = false }) {
                 value: lista.query,
                 onChangeText: lista.setQuery,
                 placeholder: "Buscar por nombre, código o serial",
-                onAdd: canManage ? () => setForm(true) : undefined,
+                onAdd: canManage ? () => setForm(false) : undefined,
                 addLabel: "Nuevo elemento",
             }}
             filters={{ options: lista.filterOptions, value: lista.filter, onChange: lista.setFilter }}
@@ -41,14 +41,29 @@ export default function InventarioScreen({ canManage = false }) {
                     icon: "cube-outline",
                     title: "El inventario está vacío",
                     message: "Registra el primer elemento para empezar.",
-                    action: canManage ? <Button title="Agregar elemento" icon="add" onPress={() => setForm(true)} /> : null,
+                    action: canManage ? <Button title="Agregar elemento" icon="add" onPress={() => setForm(false)} /> : null,
                 }}
                 renderItem={({ item }) => <ElementoCard elemento={item} onPress={() => setDetalle(item)} />}
             />
             {canManage ? (
-                <ElementoForm visible={form} onClose={() => setForm(false)} onSaved={resource.agregar} />
+                <ElementoForm
+                    visible={form !== null}
+                    elemento={form || null}
+                    onClose={() => setForm(null)}
+                    onSaved={resource.guardar}
+                />
             ) : null}
-            <ElementoDetail elemento={detalle} canManage={canManage} onUpdated={resource.reemplazar} onClose={() => setDetalle(null)} />
+            <ElementoDetail
+                elemento={detalle}
+                canManage={canManage}
+                recurso={resource}
+                onEdit={(elemento) => {
+                    setDetalle(null);
+                    setForm(elemento);
+                }}
+                onUpdated={resource.reemplazar}
+                onClose={() => setDetalle(null)}
+            />
         </ListPage>
     );
 }

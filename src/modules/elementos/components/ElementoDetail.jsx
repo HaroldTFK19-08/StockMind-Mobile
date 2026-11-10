@@ -3,11 +3,12 @@ import { View, Text, Image } from "react-native";
 import { BottomSheet, InfoField, InfoGroup, Badge, ChipSelect, Button, useToast } from "@/shared/ui";
 import { useMutation } from "@/shared/hooks";
 import { relacion, etiquetaEstado, opcionesDe } from "@/shared/utils";
+import { confirmar } from "@/shared/ui/crud/campos";
 import { elementosService } from "../elementos.service";
 import { ESTADOS_MANUALES } from "../elementos.constants";
 
-/** Detalle del elemento. Con `canManage` permite cambiar el estado. */
-export default function ElementoDetail({ elemento, onClose, onUpdated, canManage = false }) {
+/** Detalle del elemento. Con `canManage` permite editar, eliminar y cambiar el estado. */
+export default function ElementoDetail({ elemento, onClose, onEdit, onUpdated, recurso, canManage = false }) {
     const toast = useToast();
     const [estado, setEstado] = useState(elemento?.estado);
     const actualizar = useMutation(elementosService.cambiarEstado);
@@ -25,6 +26,18 @@ export default function ElementoDetail({ elemento, onClose, onUpdated, canManage
         }
     };
 
+    const eliminar = async () => {
+        const ok = await confirmar("Eliminar elemento", "Esta acción no se puede deshacer.");
+        if (!ok) return;
+        try {
+            await recurso.eliminar.mutate(elemento.id);
+            toast.show("Elemento eliminado");
+            onClose();
+        } catch (error) {
+            toast.show(error.message, "error");
+        }
+    };
+
     // Mientras esté asignado o prestado, el estado lo controla su asignación o préstamo
     const bloqueado = ["asignado", "prestado"].includes(elemento?.estado);
     const cambio = canManage && elemento && estado !== elemento.estado;
@@ -36,7 +49,22 @@ export default function ElementoDetail({ elemento, onClose, onUpdated, canManage
             title={elemento?.nombre ?? "Elemento"}
             subtitle={elemento?.codigo_inventario}
             icon="cube-outline"
-            footer={cambio ? <Button title="Guardar cambios" icon="save-outline" loading={actualizar.loading} onPress={guardar} /> : null}
+            footer={elemento && canManage ? (
+                <>
+                    <Button title="Editar elemento" icon="pencil-outline" variant="outline" onPress={() => onEdit(elemento)} />
+                    <Button
+                        title="Eliminar elemento"
+                        icon="trash-outline"
+                        variant="danger"
+                        className="mt-3"
+                        loading={recurso.eliminar.loading}
+                        onPress={eliminar}
+                    />
+                    {cambio ? (
+                        <Button title="Guardar cambios" icon="save-outline" loading={actualizar.loading} onPress={guardar} className="mt-3" />
+                    ) : null}
+                </>
+            ) : null}
         >
             {elemento ? (
                 <>

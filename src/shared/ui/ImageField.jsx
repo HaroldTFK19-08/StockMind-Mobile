@@ -2,9 +2,10 @@ import { View, Text, Image, Pressable } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import * as ImagePicker from "expo-image-picker";
 import { COLORS } from "../theme/colors";
+import Button from "./Button";
 
 /**
- * Selector de imagen (galería) conectado a formik.
+ * Selector de imagen (cámara o galería) conectado a formik.
  * El valor puede ser:
  *   - un string (URL que ya está guardada en el backend)
  *   - un objeto { uri, fileName, mimeType } recién elegido → se sube como archivo
@@ -14,10 +15,23 @@ export default function ImageField({ formik, name, label = "Foto" }) {
     const error = formik.touched[name] && formik.errors[name];
     const uri = typeof valor === "string" ? valor : valor?.uri;
 
+    const guardarImagen = (resultado) => {
+        if (!resultado.canceled && resultado.assets?.[0]) {
+            formik.setFieldValue(name, resultado.assets[0]);
+            formik.setFieldTouched(name, true, false);
+            formik.setFieldError(name, undefined);
+        }
+    };
+
+    const mostrarErrorPermiso = (mensaje) => {
+        formik.setFieldTouched(name, true, false);
+        formik.setFieldError(name, mensaje);
+    };
+
     const elegir = async () => {
         const permiso = await ImagePicker.requestMediaLibraryPermissionsAsync();
         if (!permiso.granted) {
-            formik.setFieldError(name, "Debes permitir el acceso a tus fotos.");
+            mostrarErrorPermiso("Debes permitir el acceso a tus fotos.");
             return;
         }
         const resultado = await ImagePicker.launchImageLibraryAsync({
@@ -25,10 +39,21 @@ export default function ImageField({ formik, name, label = "Foto" }) {
             allowsEditing: true,
             quality: 0.7, // el backend acepta máximo 5 MB
         });
-        if (!resultado.canceled) {
-            formik.setFieldValue(name, resultado.assets[0]);
-            formik.setFieldTouched(name, true, false);
+        guardarImagen(resultado);
+    };
+
+    const tomarFoto = async () => {
+        const permiso = await ImagePicker.requestCameraPermissionsAsync();
+        if (!permiso.granted) {
+            mostrarErrorPermiso("Debes permitir el acceso a la cámara.");
+            return;
         }
+        const resultado = await ImagePicker.launchCameraAsync({
+            mediaTypes: ["images"],
+            allowsEditing: true,
+            quality: 0.7,
+        });
+        guardarImagen(resultado);
     };
 
     return (
@@ -50,6 +75,14 @@ export default function ImageField({ formik, name, label = "Foto" }) {
                     </>
                 )}
             </Pressable>
+            <Button
+                title="Tomar foto"
+                icon="camera-outline"
+                size="sm"
+                variant="outline"
+                onPress={tomarFoto}
+                className="mt-2"
+            />
             {error ? <Text className="text-red-500 text-xs mt-1.5 ml-1">{error}</Text> : null}
         </View>
     );
