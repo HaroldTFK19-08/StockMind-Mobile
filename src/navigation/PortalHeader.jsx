@@ -6,7 +6,7 @@ import { LOGO_BLANCO } from "@/shared/theme";
 import { useAuth } from "@/modules/auth/AuthProvider";
 import { useUnreadCount } from "@/modules/notificaciones/notificaciones.store";
 import "@/modules/notificaciones/notificaciones.service"; // registra el cargador del contador
-import { PORTALS, profileOf, homeOf } from "./portals";
+import { homeDeUsuario, portalDeUsuario, profileDeUsuario } from "./portals";
 import SideMenu from "./SideMenu";
 
 /** Barra superior común a todos los portales. */
@@ -15,7 +15,7 @@ export default function PortalHeader({ showBack = false }) {
   const router = useRouter();
   const { user } = useAuth();
   const [menu, setMenu] = useState(false);
-  const portal = PORTALS[user?.rol];
+  const portal = portalDeUsuario(user);
   const unread = useUnreadCount(Boolean(portal?.notifications));
 
   return (
@@ -31,7 +31,7 @@ export default function PortalHeader({ showBack = false }) {
               onPress={() =>
                 router.canGoBack()
                   ? router.back()
-                  : router.replace(homeOf(user?.rol))
+                  : router.replace(homeDeUsuario(user))
               }
             />
           ) : (
@@ -64,7 +64,7 @@ export default function PortalHeader({ showBack = false }) {
             />
           ) : null}
           <Pressable
-            onPress={() => router.push(profileOf(user?.rol))}
+            onPress={() => router.push(profileDeUsuario(user))}
             accessibilityLabel="Mi perfil"
             hitSlop={6}
           >

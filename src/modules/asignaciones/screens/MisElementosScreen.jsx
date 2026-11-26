@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useResource, useFilteredList } from "@/shared/hooks";
 import { ListPage, ResourceList, Button } from "@/shared/ui";
 import PortalHeader from "@/navigation/PortalHeader";
+import { useAuth } from "@/modules/auth";
 import ReporteForm from "@/modules/reportes/components/ReporteForm";
 import { asignacionesService } from "../asignaciones.service";
 import { useAsignacionesAnimation } from "../hooks/useAsignacionesAnimation";
@@ -12,7 +13,8 @@ const SEARCH_KEYS = ["observaciones"];
 
 /** Elementos asignados al aprendiz autenticado. */
 export default function MisElementosScreen() {
-    const resource = useResource(() => asignacionesService.mias(), []);
+    const { user } = useAuth();
+    const resource = useResource(() => asignacionesService.mias(user?.id), [user?.id]);
     const lista = useFilteredList(resource.data, { searchKeys: SEARCH_KEYS, filterKey: "estado" });
     const [detalle, setDetalle] = useState(null);
     const [reportar, setReportar] = useState(null);

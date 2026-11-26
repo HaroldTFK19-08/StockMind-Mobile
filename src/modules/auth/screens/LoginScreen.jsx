@@ -7,7 +7,7 @@ import { Button, Card, TextField } from "@/shared/ui";
 import { COLORS } from "@/shared/theme";
 import { useAuthAnimation } from "../hooks/useAuthAnimation";
 import AuthBackground from "../components/AuthBackground";
-import { DEMO_CREDENTIALS } from "../auth.service";
+import { TEST_CREDENTIALS } from "../auth.service";
 import { useAuth } from "../AuthProvider";
 import { loginSchema } from "../validations/auth.schemas";
 import { ROLE_LABELS } from "../roles";
@@ -80,11 +80,11 @@ export default function LoginScreen() {
             />
 
             <Card className="bg-slate-50 border-slate-100 rounded-2xl p-4 mt-5">
-                <Text className="text-ink font-bold text-sm">Cuentas demo</Text>
+                <Text className="text-ink font-bold text-sm">Cuentas de prueba</Text>
                 <Text className="text-gray-500 text-xs mt-1 mb-3">
-                    Toca una cuenta para cargar sus datos. Son solo para pruebas locales.
+                    Toca una cuenta para cargar sus datos. Ingresan con el servidor StockMind.
                 </Text>
-                {DEMO_CREDENTIALS.map((credential) => (
+                {TEST_CREDENTIALS.map((credential) => (
                     <Pressable
                         key={credential.rol}
                         onPress={() =>

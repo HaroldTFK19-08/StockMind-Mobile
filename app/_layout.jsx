@@ -5,34 +5,41 @@ import { StatusBar } from "expo-status-bar";
 import * as SplashScreen from "expo-splash-screen";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { ToastProvider, BrandSplash } from "@/shared/ui";
-import { AuthProvider, useAuth } from "@/modules/auth";
-import { homeOf } from "@/navigation/portals";
+import { AuthProvider, useAuth, usuarioPendiente, rolActivo } from "@/modules/auth";
+import { homeOf, portalDelSegmento, PORTALS } from "@/navigation/portals";
 
 SplashScreen.preventAutoHideAsync().catch(() => {});
 
 /**
- * Control de acceso y redirección según estado de autenticación.
- * Evita el error 'GO_BACK was not handled' redirigiendo limpiamente
- * con replace() cuando se intenta acceder a una ruta sin permisos.
+ * Control de acceso y redirección según el estado de la sesión.
+ * Un usuario con roles pendientes NO puede entrar a ningún portal.
+ * Si tiene varios roles aprobados, solo entra al portal del rol activo.
  */
 function useProtectedRoute(user, ready) {
     const segments = useSegments();
     const router = useRouter();
 
     useEffect(() => {
-        // No se navega hasta que el <Stack> está montado (si no: "navigate before mounting").
         if (!ready) return;
 
         const firstSegment = segments[0];
         const inAuthGroup = firstSegment === "auth";
+        const enEspera = inAuthGroup && segments[1] === "pendiente";
         const enRaiz = firstSegment === undefined || firstSegment === "index";
+        const pendiente = usuarioPendiente(user);
+        const rol = rolActivo(user);
 
         if (!user && !inAuthGroup && !enRaiz) {
-            // Usuario no autenticado intentando entrar a ruta privada
             router.replace("/auth/inicio");
-        } else if (user && inAuthGroup) {
-            // Usuario ya autenticado en pantalla de login/registro
-            router.replace(homeOf(user.rol));
+        } else if (user && pendiente && !enEspera) {
+            router.replace("/auth/pendiente");
+        } else if (user && !pendiente && (inAuthGroup || enEspera)) {
+            router.replace(homeOf(rol));
+        } else if (user && !pendiente) {
+            const portalVisitado = portalDelSegmento(firstSegment);
+            if (portalVisitado && portalVisitado.base !== PORTALS[rol]?.base) {
+                router.replace(homeOf(rol));
+            }
         }
     }, [user, ready, segments, router]);
 }

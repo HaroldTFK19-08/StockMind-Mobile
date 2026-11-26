@@ -9,10 +9,11 @@ npm install
 npx expo start --clear
 ```
 
-La integración de datos se dejó sin configurar intencionalmente. Las funciones de
-los servicios de negocio en `src/modules/*/*.service.js` lanzan un error explícito
-hasta que se implemente la nueva conexión. El inicio de sesión cuenta con un modo
-demo local para validar los portales por rol mientras se integra el backend.
+Los servicios en `src/modules/*/*.service.js` consumen el backend Laravel en
+`EXPO_PUBLIC_API_URL` (por ejemplo `http://192.168.101.72:8000/v1`). El inicio de
+sesión usa `POST /v1/auth/login` y guarda el token de Sanctum para las demás
+peticiones. El registro sigue siendo local mientras se adapta al backend, así que
+las cuentas creadas desde la app no sirven para entrar con el servidor.
 
 ## Arquitectura
 
@@ -23,9 +24,9 @@ src/shared/ UI, hooks, tema y utilidades reutilizables.
 src/modules/ Dominios de negocio, pantallas y contratos de servicio.
 ```
 
-Las pantallas consumen los servicios de su dominio. Mientras se integra el
-backend, el inicio de sesión usa cuatro cuentas demo locales para probar la
-navegación por rol. No son credenciales reales ni deben usarse en producción:
+Las pantallas consumen los servicios de su dominio. Estas cuentas de prueba sí
+existen en la base de datos del backend y sirven para probar los portales por
+rol. No deben usarse en producción:
 
 | Rol | Correo | Contraseña |
 | --- | --- | --- |

@@ -1,4 +1,4 @@
-import { ROLES } from "@/modules/auth/roles";
+import { ROLES, rolActivo } from "@/modules/auth/roles";
 
 /**
  * Un "portal" por rol: qué pestañas ve, a dónde lleva su perfil y
@@ -34,6 +34,7 @@ export const PORTALS = {
         tabs: [
             { name: "home", title: "Inicio", icon: "home" },
             { name: "ambientes", title: "Ambientes", icon: "easel" },
+            { name: "asignaciones", title: "Asignaciones", icon: "clipboard" },
             { name: "reportes", title: "Reportes", icon: "document-text" },
         ],
         hidden: ["perfil"],
@@ -45,6 +46,7 @@ export const PORTALS = {
             { name: "home", title: "Inicio", icon: "home" },
             { name: "ambientes", title: "Ambientes", icon: "easel" },
             { name: "asignaciones", title: "Asignaciones", icon: "clipboard" },
+            { name: "alertas", title: "Alertas", icon: "alert-circle" },
             { name: "traslados", title: "Traslados", icon: "swap-horizontal" },
         ],
         hidden: ["perfil", "prestamos", "movimientos"],
@@ -67,3 +69,10 @@ export const PORTALS = {
 
 export const homeOf = (rol) => (PORTALS[rol] ? `${PORTALS[rol].base}/home` : "/auth/inicio");
 export const profileOf = (rol) => (PORTALS[rol] ? `${PORTALS[rol].base}/perfil` : "/auth/inicio");
+
+/** Funciones que miran el rol activo del usuario (puede tener varios). */
+export const portalDeUsuario = (user) => PORTALS[rolActivo(user)];
+export const homeDeUsuario = (user) => homeOf(rolActivo(user));
+export const profileDeUsuario = (user) => profileOf(rolActivo(user));
+export const portalDelSegmento = (segmento) =>
+    Object.values(PORTALS).find((portal) => portal.base === `/${segmento}`) ?? null;

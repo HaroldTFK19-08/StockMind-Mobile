@@ -18,7 +18,7 @@ export default function HomeScreen() {
     const router = useRouter();
     const { user } = useAuth();
     const config = HOME_CONFIG[user?.rol];
-    const resumen = useResource(() => dashboardService.resumen(user?.rol), [user?.rol]);
+    const resumen = useResource(() => dashboardService.resumen(user), [user?.id]);
     const animationStyle = useDashboardAnimation();
     if (!config) return null;
     // Pares de tarjetas para la grilla 2xN

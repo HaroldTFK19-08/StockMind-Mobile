@@ -1,5 +1,4 @@
 import api, { datos, todas, enviar } from "@/core/config/api/consumo";
-import { serviceNotConfigured } from "@/core";
 import { todayISO } from "@/shared/utils";
 
 // Ruta /asignaciones → tabla `assignments` del backend
@@ -32,9 +31,14 @@ export const asignacionesService = {
         return id;
     },
 
-    /** "Mis elementos" necesita saber quién inició sesión (auth), por eso queda pendiente. */
-    mias() {
-        return serviceNotConfigured("asignaciones.mias");
+    /** "Mis elementos": se filtran las asignaciones por el aprendiz en sesión. */
+    async mias(apprenticeId) {
+        const asignaciones = await asignacionesService.list();
+        return asignaciones.filter(
+            (a) =>
+                String(a.apprentice_id) === String(apprenticeId) ||
+                String(a.apprentice?.user?.id ?? "") === String(apprenticeId)
+        );
     },
 
     /** Marca la asignación como devuelta; el backend deja el elemento disponible. */

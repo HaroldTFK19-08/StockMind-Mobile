@@ -1,11 +1,22 @@
 import axios from "axios";
+import { tokenStorage } from "@/core/storage/tokenStorage";
 
 // Conexión con el backend. La URL sale del archivo .env
-// Ejemplo: EXPO_PUBLIC_API_URL=http://192.168.20.63:8000/v1
+// Ejemplo: EXPO_PUBLIC_API_URL=http://192.168.101.72:8000/v1
 const api = axios.create({
     baseURL: process.env.EXPO_PUBLIC_API_URL,
     timeout: 15000,
     headers: { Accept: "application/json" },
+});
+
+// Envía el token de Sanctum en las peticiones autenticadas.
+// Los tokens demo locales no se envían al backend.
+api.interceptors.request.use(async (config) => {
+    const token = await tokenStorage.get();
+    if (token && !token.startsWith("stockmind-demo-token")) {
+        config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
 });
 
 // Si algo falla, se deja un mensaje entendible en error.message
@@ -17,6 +28,7 @@ api.interceptors.response.use(
         if (!respuesta) {
             // No hubo respuesta: servidor apagado, IP mala o CORS
             console.warn("[API] Sin respuesta de:", api.defaults.baseURL + (error.config?.url ?? ""));
+            error.isNetworkError = true;
             error.message = "No se pudo conectar con el servidor.";
         } else if (respuesta.data?.errors) {
             // Error de validación de Laravel (422): se muestra el primero

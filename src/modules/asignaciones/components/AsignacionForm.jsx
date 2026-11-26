@@ -6,7 +6,7 @@ import { elementosService } from "@/modules/elementos/elementos.service";
 import { asignacionesService } from "../asignaciones.service";
 import { asignacionSchema } from "../validations/asignaciones.schemas";
 
-export default function AsignacionForm({ visible, onClose, onSaved }) {
+export default function AsignacionForm({ visible, onClose, onSaved, instructorId = null }) {
     const toast = useToast();
     const crear = useMutation(asignacionesService.create);
     // Solo elementos disponibles (el backend rechaza los que ya están asignados o prestados)
@@ -14,7 +14,8 @@ export default function AsignacionForm({ visible, onClose, onSaved }) {
     const disponibles = (elementos.data ?? []).filter((e) => e.estado === "disponible");
 
     const formik = useFormik({
-        initialValues: { element_id: "", apprentice_id: "", teacher_id: "", fecha_asignacion: todayISO(), fecha_devolucion_esperada: "", observaciones: "" },
+        // El modelo guarda el instructor en asignaciones.id_instructor: si viene de la sesión, no se escribe a mano.
+        initialValues: { element_id: "", apprentice_id: "", teacher_id: instructorId ? String(instructorId) : "", fecha_asignacion: todayISO(), fecha_devolucion_esperada: "", observaciones: "" },
         validationSchema: asignacionSchema,
         onSubmit: async (values, helpers) => {
             try {
@@ -53,9 +54,11 @@ export default function AsignacionForm({ visible, onClose, onSaved }) {
                 loading={elementos.loading}
                 options={disponibles.map((e) => ({ label: e.nombre, value: e.id, description: e.codigo_inventario }))}
             />
-            {/* No hay ruta /aprendices ni /instructores: se escribe el id */}
+            {/* No hay ruta /aprendices: se escribe el id. El instructor se toma de la sesión. */}
             <TextField formik={formik} name="apprentice_id" label="ID del aprendiz" icon="person-outline" keyboardType="numeric" />
-            <TextField formik={formik} name="teacher_id" label="ID del instructor" icon="school-outline" keyboardType="numeric" />
+            {instructorId ? null : (
+                <TextField formik={formik} name="teacher_id" label="ID del instructor" icon="school-outline" keyboardType="numeric" />
+            )}
             <TextField formik={formik} name="fecha_asignacion" label="Fecha de asignación" icon="calendar-outline" placeholder="AAAA-MM-DD" keyboardType="numbers-and-punctuation" />
             <TextField formik={formik} name="fecha_devolucion_esperada" label="Devolución esperada" icon="calendar-clear-outline" placeholder="AAAA-MM-DD" keyboardType="numbers-and-punctuation" />
             <TextField formik={formik} name="observaciones" label="Observaciones (opcional)" placeholder="Estado de entrega, accesorios…" multiline />

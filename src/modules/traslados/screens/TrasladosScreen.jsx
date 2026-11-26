@@ -2,7 +2,7 @@ import { useState } from "react";
 import { View } from "react-native";
 import { useFilteredList, useMutation } from "@/shared/hooks";
 import { ListPage, ResourceList, Button, BottomSheet, InfoField, InfoGroup, Badge, useToast } from "@/shared/ui";
-import { formatDate, nombresElementos, nombreUsuario } from "@/shared/utils";
+import { formatDate, nombresElementos } from "@/shared/utils";
 import PortalHeader from "@/navigation/PortalHeader";
 import { trasladosService } from "../traslados.service";
 import { useTraslados } from "../hooks/useTraslados";
@@ -103,8 +103,6 @@ export default function TrasladosScreen() {
                         <InfoGroup>
                             <InfoField icon="calendar-outline" label="Solicitud" value={formatDate(detalle.fecha_solicitud)} />
                             <InfoField icon="calendar-clear-outline" label="Traslado" value={formatDate(detalle.fecha_traslado)} />
-                            <InfoField icon="key-outline" label="Cuenta-dante"
-                                value={nombreUsuario(detalle.danteaccount?.user) ?? `#${detalle.danteaccount_id}`} />
                         </InfoGroup>
                     </>
                 ) : null}

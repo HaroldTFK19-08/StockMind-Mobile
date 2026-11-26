@@ -6,14 +6,16 @@ import {
   Image,
   ScrollView,
 } from "react-native";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { Avatar, Badge } from "@/shared/ui";
 import { COLORS, LOGO_BLANCO } from "@/shared/theme";
 import { useAuth } from "@/modules/auth/AuthProvider";
-import { PORTALS, profileOf } from "./portals";
+import RoleSwitcher from "@/modules/auth/components/RoleSwitcher";
+import { ROLE_LABELS, rolesAprobados } from "@/modules/auth/roles";
+import { portalDeUsuario, profileDeUsuario } from "./portals";
 
 function MenuItem({ icon, label, description, onPress, danger }) {
   return (
@@ -50,7 +52,8 @@ function MenuItem({ icon, label, description, onPress, danger }) {
 export default function SideMenu({ visible, onClose }) {
   const router = useRouter();
   const { user, logout } = useAuth();
-  const portal = PORTALS[user?.rol];
+  const portal = portalDeUsuario(user);
+  const [cambiarRol, setCambiarRol] = useState(false);
   const pendingHref = useRef(null);
 
   useEffect(() => {
@@ -69,6 +72,7 @@ export default function SideMenu({ visible, onClose }) {
     onClose();
   };
   return (
+    <>
     <Modal
       visible={visible}
       transparent
@@ -131,8 +135,16 @@ export default function SideMenu({ visible, onClose }) {
                 icon="person-circle-outline"
                 label="Mi perfil"
                 description={user?.rolLabel}
-                onPress={() => ir(profileOf(user?.rol))}
+                onPress={() => ir(profileDeUsuario(user))}
               />
+              {rolesAprobados(user).length > 1 ? (
+                <MenuItem
+                  icon="swap-horizontal-outline"
+                  label="Cambiar de rol"
+                  description={rolesAprobados(user).map((r) => ROLE_LABELS[r.rol] ?? r.rol).join(", ")}
+                  onPress={() => setCambiarRol(true)}
+                />
+              ) : null}
               {portal?.menu.map((item) => (
                 <MenuItem
                   key={item.href}
@@ -172,5 +184,7 @@ export default function SideMenu({ visible, onClose }) {
         </SafeAreaView>
       </SafeAreaProvider>
     </Modal>
+    <RoleSwitcher visible={cambiarRol} onClose={() => setCambiarRol(false)} />
+    </>
   );
 }

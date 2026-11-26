@@ -3,8 +3,8 @@ import { formatDate, nombresElementos, etiquetaEstado } from "@/shared/utils";
 
 /**
  * Campos de RegistroMovimientoRequest (tabla motions).
- * Los movimientos tipo "traslado" los crea el backend al registrar un traslado,
- * por eso aquí solo se ofrecen Ingreso, Retiro y Baja.
+ * Los movimientos de traslado se registran desde Traslados con la lista de
+ * elementos; aquí solo se ofrecen Ingreso, Retiro y Baja.
  */
 export const MOVIMIENTO_CAMPOS = [
     { name: "tipo", label: "Tipo", tipo: "opciones", opciones: ["Ingreso", "Retiro", "Baja"], requerido: true },

@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useResource, useFilteredList } from "@/shared/hooks";
 import { ListPage, ResourceList, Button } from "@/shared/ui";
 import PortalHeader from "@/navigation/PortalHeader";
+import { useAuth } from "@/modules/auth";
 import { reportesService } from "../reportes.service";
 import { useReportesAnimation } from "../hooks/useReportesAnimation";
 import ReporteCard from "../components/ReporteCard";
@@ -14,7 +15,11 @@ const SEARCH_KEYS = ["tipo", "descripcion"];
  * scope="all":  todos los reportes (admin) · scope="mine": los míos
  */
 export default function ReportesScreen({ scope = "mine", canCreate = true, canManage = false }) {
-    const resource = useResource(() => (scope === "all" ? reportesService.list() : reportesService.mios()), [scope]);
+    const { user } = useAuth();
+    const resource = useResource(
+        () => (scope === "all" ? reportesService.list() : reportesService.mios(user?.id)),
+        [scope, user?.id]
+    );
     const lista = useFilteredList(resource.data, { searchKeys: SEARCH_KEYS, filterKey: "estado" });
     const [form, setForm] = useState(false);
     const [detalle, setDetalle] = useState(null);

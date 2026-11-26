@@ -9,6 +9,8 @@ import { COLORS } from "@/shared/theme";
 import { useAuthAnimation } from "../hooks/useAuthAnimation";
 import PortalHeader from "@/navigation/PortalHeader";
 import { useAuth } from "../AuthProvider";
+import RoleSwitcher from "../components/RoleSwitcher";
+import { etiquetasRoles, rolesAprobados } from "../roles";
 import { perfilSchema } from "../validations/auth.schemas";
 
 const valoresPerfil = (user) => ({
@@ -39,6 +41,7 @@ export default function ProfileScreen() {
     const [confirmar, setConfirmar] = useState(false);
     const [saliendo, setSaliendo] = useState(false);
     const [editando, setEditando] = useState(false);
+    const [cambiarRol, setCambiarRol] = useState(false);
     const animationStyle = useAuthAnimation();
     const guardarPerfil = useMutation(updateProfile);
     const formik = useFormik({
@@ -98,7 +101,7 @@ export default function ProfileScreen() {
                     <Card>
                         <Text className="text-lg font-bold text-ink mb-4">Información personal</Text>
                         <View className="gap-4">
-                            <InfoField icon="shield-checkmark-outline" label="Rol">
+                            <InfoField icon="shield-checkmark-outline" label="Rol activo">
                                 <View className="mt-1">
                                     <Badge label={user?.rolLabel} tone="success" />
                                 </View>
@@ -109,6 +112,28 @@ export default function ProfileScreen() {
                             {user?.ficha ? <InfoField icon="people-outline" label="Ficha" value={user.ficha} /> : null}
                             {user?.centro ? <InfoField icon="business-outline" label="Centro" value={user.centro} /> : null}
                         </View>
+                    </Card>
+
+                    <Card>
+                        <Text className="text-lg font-bold text-ink mb-3">Mis roles</Text>
+                        {etiquetasRoles(user).map((rol) => (
+                            <View key={rol.rol} className="flex-row items-center justify-between py-2">
+                                <Text className="text-sm text-gray-700">{rol.etiqueta}</Text>
+                                <Badge
+                                    label={rol.estado === "pendiente" ? "Pendiente" : "Aprobado"}
+                                    tone={rol.estado === "pendiente" ? "warning" : "success"}
+                                />
+                            </View>
+                        ))}
+                        {rolesAprobados(user).length > 1 ? (
+                            <Button
+                                title="Cambiar de rol"
+                                icon="swap-horizontal-outline"
+                                variant="soft"
+                                className="mt-3"
+                                onPress={() => setCambiarRol(true)}
+                            />
+                        ) : null}
                     </Card>
 
                     <Card className="py-1">
@@ -159,6 +184,8 @@ export default function ProfileScreen() {
                     keyboardType="phone-pad"
                 />
             </BottomSheet>
+
+            <RoleSwitcher visible={cambiarRol} onClose={() => setCambiarRol(false)} />
         </Screen>
     );
 }

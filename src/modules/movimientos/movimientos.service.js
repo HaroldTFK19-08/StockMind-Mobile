@@ -14,9 +14,14 @@ export const movimientosService = {
         return datos(await api.get(`${RUTA}/${id}`));
     },
 
-    /** POST /movimientos (si hay imagen se envía como multipart) */
+    /**
+     * POST /movimientos (si hay imagen se envía como multipart).
+     * La lista de elementos se manda como IDs: el backend la guarda en la tabla
+     * aparte de detalle del movimiento (no se guarda dentro del movimiento).
+     */
     async create(values) {
-        return datos(await enviar("post", RUTA, values));
+        const cuerpo = { ...values, element_ids: (values.element_ids ?? []).map(Number) };
+        return datos(await enviar("post", RUTA, cuerpo));
     },
 
     /** PUT /movimientos/:id (basta con enviar los campos que cambian) */

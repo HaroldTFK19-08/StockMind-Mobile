@@ -11,11 +11,17 @@ import AsignacionForm from "../components/AsignacionForm";
 
 const SEARCH_KEYS = ["observaciones", "apprentice_id"];
 
-/** Gestión de asignaciones (cuentadante). */
-export default function AsignacionesScreen() {
+/**
+ * Asignaciones: el instructor crea y controla devoluciones; el cuentadante solo consulta.
+ * `ambienteId` (de la sesión) limita la lista a los elementos de su ambiente (cuentadantes.id_ambiente).
+ */
+export default function AsignacionesScreen({ puedeAsignar = false, instructorId = null, ambienteId = null }) {
     const toast = useToast();
     const resource = useAsignaciones(); // GET /asignaciones
     const lista = useFilteredList(resource.data, { searchKeys: SEARCH_KEYS, filterKey: "estado" });
+    const visibles = ambienteId
+        ? lista.items.filter((a) => String(a.element?.environment_id ?? "") === String(ambienteId))
+        : lista.items;
     const [form, setForm] = useState(false);
     const [detalle, setDetalle] = useState(null);
     const finalizar = useMutation(asignacionesService.finalizar);
@@ -37,34 +43,40 @@ export default function AsignacionesScreen() {
             animationStyle={animationStyle}
             header={<PortalHeader />}
             title="Asignaciones"
-            subtitle="Asigna elementos a los aprendices y controla su devolución"
+            subtitle={
+                puedeAsignar
+                    ? "Asigna elementos a los aprendices y controla su devolución"
+                    : "Consulta los equipos asignados y sus devoluciones"
+            }
             search={{
                 value: lista.query,
                 onChangeText: lista.setQuery,
                 placeholder: "Buscar por observación o ID de aprendiz",
-                onAdd: () => setForm(true),
+                onAdd: puedeAsignar ? () => setForm(true) : undefined,
                 addLabel: "Nueva asignación",
             }}
             filters={{ options: lista.filterOptions, value: lista.filter, onChange: lista.setFilter }}
         >
             <ResourceList
                 resource={resource}
-                items={lista.items}
+                items={visibles}
                 filtered={Boolean(lista.query || lista.filter)}
                 empty={{
                     icon: "clipboard-outline",
                     title: "Sin asignaciones",
-                    message: "Aún no has asignado elementos.",
-                    action: <Button title="Nueva asignación" icon="add" onPress={() => setForm(true)} />,
+                    message: puedeAsignar ? "Aún no has asignado elementos." : "No hay asignaciones en tu ambiente.",
+                    action: puedeAsignar ? <Button title="Nueva asignación" icon="add" onPress={() => setForm(true)} /> : null,
                 }}
                 renderItem={({ item }) => <AsignacionCard asignacion={item} onPress={() => setDetalle(item)} />}
             />
-            <AsignacionForm visible={form} onClose={() => setForm(false)} onSaved={resource.agregar} />
+            {puedeAsignar ? (
+                <AsignacionForm visible={form} onClose={() => setForm(false)} onSaved={resource.agregar} instructorId={instructorId} />
+            ) : null}
             <AsignacionDetail
                 asignacion={detalle}
                 onClose={() => setDetalle(null)}
                 actions={
-                    detalle && detalle.estado !== "devuelta" ? (
+                    puedeAsignar && detalle && detalle.estado !== "devuelta" ? (
                         <Button title="Registrar devolución" icon="checkmark-circle-outline" variant="danger" loading={finalizar.loading} onPress={onFinalizar} />
                     ) : null
                 }
